@@ -10,8 +10,8 @@ from datetime import datetime, timedelta
 # PAGE CONFIG
 # ─────────────────────────────────────────────
 st.set_page_config(
-    page_title="Weather & Environmental Monitor",
-    page_icon="🌫️",
+    page_title="Weather & Climate Tracker",
+    page_icon="🐔",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -31,436 +31,491 @@ def t(en: str, id: str) -> str:
     return en if st.session_state.lang == "EN" else id
 
 # ─────────────────────────────────────────────
-# CUSTOM CSS — The Forest × Survival Horror × Dense Jungle
+# CUSTOM CSS — Farm Theme with Vibrant Gradient
 # ─────────────────────────────────────────────
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Share+Tech+Mono&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
     :root {
-        --forest-deep:   #0C1A08;
-        --forest-mid:    #142010;
-        --forest-card:   #1C2C12;
-        --forest-border: #2C4018;
-        --canopy:        #3A5828;
-        --moss:          #7AB83C;
-        --moss-dark:     #4E7A22;
-        --moss-glow:     rgba(122,184,60,0.22);
-        --lichen:        #C4DC5C;
-        --fog:           #D0DEB8;
-        --fog-dim:       #9AAE7C;
-        --fog-faint:     #607850;
-        --bark:          #6A4820;
-        --bark-dark:     #4A3010;
-        --danger:        #CC5818;
-        --danger-glow:   rgba(204,88,24,0.22);
-        --gold:          #C8A030;
-        --spore:         #A8D030;
-        --spore-glow:    rgba(168,208,48,0.18);
+        --bg-main:       #FFFFFF;
+        --bg-light:      #F8F9FA;
+        --bg-card:       #FFFFFF;
+        --border:        #E0E0E0;
+        --text-dark:     #1A1A1A;
+        --text-light:    #666666;
+        --accent-warm:   #FF8C00;
+        --accent-orange: #FF7700;
+        --accent-green:  #2D8659;
+        --accent-sky:    #0099CC;
+        --accent-pink:   #E74C3C;
+        --accent-yellow: #F39C12;
+        --shadow-light:  0 2px 8px rgba(0,0,0,0.08);
+        --shadow-mid:    0 4px 16px rgba(0,0,0,0.12);
+        --shadow-deep:   0 8px 24px rgba(0,0,0,0.15);
     }
 
     html, body, [class*="css"] {
-        font-family: 'Share Tech Mono', 'Courier New', monospace !important;
-        background-color: var(--forest-deep) !important;
-        color: var(--fog) !important;
+        font-family: 'Poppins', sans-serif !important;
+        color: var(--text-dark) !important;
     }
+    
     .main, .block-container {
         background-color: transparent !important;
-        padding-top: 0.8rem !important;
-        padding-left: 1.4rem !important;
-        padding-right: 1.4rem !important;
+        padding-top: 1rem !important;
+        padding-left: 1.2rem !important;
+        padding-right: 1.2rem !important;
         max-width: 100% !important;
-        position: relative !important;
-        z-index: 2 !important;
     }
+    
     body, html {
-        background-color: #0C1A08 !important;
+        background: #FFFFFF !important;
+        min-height: 100vh !important;
     }
-
-    /* ── Organic film grain ── */
-    body::after {
-        content: '';
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        z-index: 9999;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-        background-repeat: repeat;
-        background-size: 200px 200px;
-        opacity: 0.45;
-        mix-blend-mode: overlay;
+    
+    /* ── Responsive padding ── */
+    @media (max-width: 768px) {
+        .main, .block-container {
+            padding-left: 0.8rem !important;
+            padding-right: 0.8rem !important;
+            padding-top: 0.8rem !important;
+        }
     }
-
-    /* ── Dappled light scanlines ── */
-    .main::before {
-        content: '';
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        z-index: 9998;
-        background: repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 3px,
-            rgba(168,208,48,0.008) 3px,
-            rgba(168,208,48,0.008) 4px
-        );
+    
+    @media (max-width: 480px) {
+        .main, .block-container {
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+            padding-top: 0.5rem !important;
+        }
     }
 
     /* ── Sidebar ── */
     [data-testid="stSidebar"] {
-        background-color: rgba(12,26,8,0.97) !important;
-        border-right: 3px solid var(--moss) !important;
-        box-shadow: 4px 0 24px var(--moss-glow) !important;
-        position: relative !important;
-        z-index: 10 !important;
+        background: var(--bg-light) !important;
+        border-right: 1px solid var(--border) !important;
+        box-shadow: 1px 0 4px rgba(0,0,0,0.05) !important;
     }
-    [data-testid="stSidebar"] * { color: var(--fog) !important; }
-    [data-testid="stSidebar"] a { color: var(--moss) !important; }
+    [data-testid="stSidebar"] * { color: var(--text-dark) !important; }
+    [data-testid="stSidebar"] a { color: var(--accent-warm) !important; }
+    
+    @media (max-width: 768px) {
+        [data-testid="stSidebar"] {
+            border-right: 1px solid var(--border) !important;
+        }
+    }
 
     /* ── Tabs ── */
     .stTabs [data-baseweb="tab-list"] {
-        background: rgba(20,32,16,0.95) !important;
-        border-bottom: 2px solid var(--forest-border) !important;
+        background: transparent !important;
+        border-bottom: 2px solid var(--border) !important;
         gap: 0 !important;
     }
     .stTabs [data-baseweb="tab"] {
-        font-family: 'Share Tech Mono', monospace !important;
-        font-size: 0.80rem !important;
-        letter-spacing: 0.10em !important;
-        color: var(--fog-faint) !important;
+        font-family: 'Poppins', sans-serif !important;
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.02em !important;
+        color: var(--text-light) !important;
         background: transparent !important;
         border: none !important;
-        border-right: 1px solid var(--forest-border) !important;
-        padding: 13px 26px !important;
-        text-transform: uppercase !important;
-        transition: color 0.2s, background 0.2s !important;
-    }
-    .stTabs [data-baseweb="tab"]:first-child {
-        border-left: 1px solid var(--forest-border) !important;
+        border-bottom: 3px solid transparent !important;
+        padding: 12px 16px !important;
+        margin: 0 4px !important;
+        transition: all 0.3s ease !important;
     }
     .stTabs [aria-selected="true"] {
-        color: var(--lichen) !important;
-        background: var(--moss-glow) !important;
-        border-bottom: 3px solid var(--moss) !important;
-        border-left: 2px solid var(--moss) !important;
+        color: var(--accent-warm) !important;
+        background: transparent !important;
+        border-bottom: 3px solid var(--accent-warm) !important;
     }
     .stTabs [data-baseweb="tab"]:hover {
-        color: var(--fog-dim) !important;
-        background: rgba(122,184,60,0.06) !important;
+        color: var(--accent-warm) !important;
+        background: transparent !important;
     }
     .stTabs [data-baseweb="tab-panel"] {
-        background: rgba(12,26,8,0.80) !important;
-        padding: 1.5rem 0 !important;
-        backdrop-filter: blur(4px) !important;
+        background: transparent !important;
+        padding: 1.5rem !important;
+    }
+    
+    @media (max-width: 768px) {
+        .stTabs [data-baseweb="tab"] {
+            font-size: 0.75rem !important;
+            padding: 10px 12px !important;
+            margin: 0 2px !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .stTabs [data-baseweb="tab"] {
+            font-size: 0.70rem !important;
+            padding: 8px 10px !important;
+            margin: 0 1px !important;
+        }
+        .stTabs [data-baseweb="tab-panel"] {
+            padding: 1rem !important;
+        }
     }
 
     /* ── Metric Card ── */
     .sh-card {
-        background: rgba(20,32,16,0.88);
-        border: 1px solid var(--forest-border);
-        border-top: 3px solid var(--moss);
-        border-radius: 4px;
-        box-shadow: 3px 3px 0px var(--bark-dark), 0 0 16px var(--moss-glow);
-        padding: 18px 14px 16px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: var(--shadow-light);
+        padding: 20px 16px;
         text-align: center;
         position: relative;
-        transition: box-shadow 0.25s, border-color 0.25s;
-        backdrop-filter: blur(4px);
+        transition: all 0.3s ease;
     }
-    .sh-card::after {
+    .sh-card::before {
         content: '';
         position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 1px;
-        background: linear-gradient(90deg, var(--moss), var(--lichen), transparent);
-        animation: forestPulse 4s ease-in-out infinite;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent-warm), var(--accent-green), transparent);
+        border-radius: 12px 12px 0 0;
+        animation: shimmer 2s infinite;
     }
     .sh-card:hover {
-        border-color: var(--canopy);
-        box-shadow: 4px 4px 0px var(--bark-dark), 0 0 24px var(--moss-glow);
-        border-top-color: var(--lichen);
+        border-color: var(--accent-warm);
+        box-shadow: var(--shadow-mid);
+        transform: translateY(-2px);
     }
     .sh-card-value {
-        font-family: 'Cinzel', serif !important;
-        font-size: 2.0rem;
-        color: var(--fog);
+        font-family: 'Poppins', sans-serif !important;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--accent-warm);
         line-height: 1;
-        text-shadow: 0 0 12px var(--moss-glow);
+        margin-bottom: 4px;
     }
     .sh-card-unit {
-        font-family: 'Share Tech Mono', monospace;
-        font-size: 0.78rem;
-        color: var(--fog-faint);
-        margin-left: 3px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.80rem;
+        font-weight: 600;
+        color: var(--accent-green);
+        margin-left: 2px;
     }
     .sh-card-label {
-        font-family: 'Share Tech Mono', monospace;
-        font-size: 0.68rem;
-        color: var(--fog-dim);
-        margin-top: 8px;
-        letter-spacing: 0.10em;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--text-light);
+        margin-top: 10px;
+        letter-spacing: 0.02em;
         text-transform: uppercase;
+    }
+    
+    @media (max-width: 768px) {
+        .sh-card {
+            padding: 16px 12px;
+            border-radius: 10px;
+        }
+        .sh-card-value { font-size: 1.5rem !important; }
+    }
+    
+    @media (max-width: 480px) {
+        .sh-card {
+            padding: 12px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        .sh-card-value { font-size: 1.3rem !important; }
+        .sh-card-label { font-size: 0.65rem !important; }
+    }
+    
+    @keyframes shimmer {
+        0%, 100% { width: 30%; opacity: 0.5; }
+        50% { width: 100%; opacity: 1; }
     }
 
     /* ── Section header ── */
     .sh-header {
-        font-family: 'Cinzel', serif !important;
-        font-size: 0.82rem;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: var(--fog-dim);
-        border-bottom: 1px solid var(--forest-border);
-        padding-bottom: 9px;
-        margin: 24px 0 18px 0;
+        font-family: 'Poppins', sans-serif !important;
+        font-size: 1.1rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        text-transform: none;
+        color: var(--accent-warm);
+        border-bottom: 3px solid var(--accent-warm);
+        padding-bottom: 10px;
+        margin: 28px 0 16px 0;
         position: relative;
     }
     .sh-header::before {
-        content: "❧ ";
-        color: var(--moss);
-        font-family: serif;
-        font-size: 1.0rem;
+        content: "🌾 ";
+        margin-right: 8px;
+        animation: wave 2s ease-in-out infinite;
     }
-    .sh-header::after {
-        content: '';
-        position: absolute;
-        bottom: -1px; left: 0;
-        width: 90px; height: 2px;
-        background: linear-gradient(90deg, var(--moss), var(--lichen));
+    
+    @keyframes wave {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(10deg); }
+        75% { transform: rotate(-10deg); }
+    }
+    
+    @media (max-width: 768px) {
+        .sh-header {
+            font-size: 1rem;
+            margin: 20px 0 12px 0;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .sh-header {
+            font-size: 0.90rem;
+            margin: 16px 0 10px 0;
+        }
     }
 
     /* ── Info box ── */
     .sh-info {
-        background: rgba(20,32,16,0.80);
-        border-top: 1px solid var(--forest-border);
-        border-right: 1px solid var(--forest-border);
-        border-bottom: 1px solid var(--forest-border);
-        border-left: 4px solid var(--moss);
-        border-radius: 0 4px 4px 0;
-        padding: 10px 16px;
-        font-size: 0.80rem;
-        font-family: 'Share Tech Mono', monospace;
-        color: var(--fog-dim);
+        background: linear-gradient(135deg, rgba(82,183,136,0.12), rgba(116,192,252,0.12));
+        border-left: 5px solid var(--accent-green);
+        border-radius: 8px;
+        padding: 12px 14px;
+        font-size: 0.82rem;
+        font-family: 'Poppins', sans-serif;
+        color: var(--text-light);
         margin-bottom: 18px;
-        font-style: italic;
+    }
+    
+    @media (max-width: 480px) {
+        .sh-info {
+            font-size: 0.75rem;
+            padding: 10px 12px;
+        }
     }
 
     /* ── Forecast card ── */
     .sh-forecast {
-        background: rgba(20,32,16,0.85);
-        border: 1px solid var(--forest-border);
-        border-radius: 4px;
-        box-shadow: 2px 2px 0px var(--bark-dark);
-        backdrop-filter: blur(3px);
-        padding: 12px 6px;
+        background: #FFFFFF;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        box-shadow: var(--shadow-light);
+        padding: 14px 10px;
         text-align: center;
-        transition: border-color 0.2s, box-shadow 0.2s;
+        transition: all 0.3s ease;
     }
     .sh-forecast:hover {
-        border-color: var(--moss);
-        box-shadow: 3px 3px 0 var(--bark-dark), 0 0 12px var(--moss-glow);
+        border-color: var(--accent-warm);
+        box-shadow: var(--shadow-mid);
+        transform: translateY(-1px);
+    }
+    
+    @media (max-width: 768px) {
+        .sh-forecast {
+            border-radius: 8px;
+            padding: 12px 8px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .sh-forecast {
+            border-radius: 6px;
+            padding: 10px 6px;
+            border: 1px solid var(--border);
+        }
     }
 
     /* ── AQI banner ── */
     .sh-aqi-banner {
-        background: rgba(20,32,16,0.88);
-        border: 1px solid var(--forest-border);
-        border-left: 5px solid;
-        border-radius: 0 4px 4px 0;
-        box-shadow: 4px 4px 0px var(--bark-dark);
-        padding: 18px 24px;
-        margin-bottom: 22px;
-        backdrop-filter: blur(4px);
+        background: #FFFFFF;
+        border: 1px solid var(--border);
+        border-left: 4px solid var(--accent-warm);
+        border-radius: 10px;
+        box-shadow: var(--shadow-light);
+        padding: 20px 22px;
+        margin-bottom: 20px;
+    }
+    
+    @media (max-width: 768px) {
+        .sh-aqi-banner {
+            padding: 16px 18px;
+            border-radius: 8px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .sh-aqi-banner {
+            padding: 12px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent-warm);
+        }
     }
 
     /* ── Buttons ── */
     .stButton > button {
-        font-family: 'Share Tech Mono', monospace !important;
-        font-size: 0.76rem !important;
-        letter-spacing: 0.14em !important;
-        text-transform: uppercase !important;
-        background: rgba(28,44,18,0.9) !important;
-        color: var(--fog-dim) !important;
-        border: 1px solid var(--forest-border) !important;
-        border-radius: 4px !important;
-        padding: 9px 18px !important;
-        transition: all 0.18s !important;
-        box-shadow: 2px 2px 0 var(--bark-dark) !important;
+        font-family: 'Poppins', sans-serif !important;
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.01em !important;
+        text-transform: none !important;
+        background: linear-gradient(135deg, var(--accent-warm), #FF9500) !important;
+        color: white !important;
+        border: 1px solid var(--accent-warm) !important;
+        border-radius: 8px !important;
+        padding: 11px 22px !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 2px 8px rgba(255,140,0,0.2) !important;
     }
     .stButton > button:hover {
-        background: var(--moss-dark) !important;
-        color: var(--lichen) !important;
-        border-color: var(--moss) !important;
-        box-shadow: 3px 3px 0 var(--bark-dark), 0 0 10px var(--moss-glow) !important;
+        background: linear-gradient(135deg, #FF9500, #FF8200) !important;
+        box-shadow: 0 4px 12px rgba(255,140,0,0.3) !important;
+        transform: translateY(-1px) !important;
     }
     .stButton > button:active {
-        background: var(--canopy) !important;
-        transform: translate(1px, 1px) !important;
-        box-shadow: 1px 1px 0 var(--bark-dark) !important;
+        transform: translateY(0) !important;
+        box-shadow: 0 2px 6px rgba(255,140,0,0.2) !important;
+    }
+    
+    @media (max-width: 768px) {
+        .stButton > button {
+            font-size: 0.80rem !important;
+            padding: 10px 18px !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .stButton > button {
+            font-size: 0.75rem !important;
+            padding: 9px 14px !important;
+            border-radius: 6px !important;
+        }
     }
 
     /* ── Widgets ── */
     .stSelectbox label, .stMultiSelect label, .stSlider label {
-        font-family: 'Share Tech Mono', monospace !important;
-        font-size: 0.70rem !important;
-        letter-spacing: 0.12em !important;
+        font-family: 'Poppins', sans-serif !important;
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.02em !important;
         text-transform: uppercase !important;
-        color: var(--fog-dim) !important;
+        color: var(--text-dark) !important;
     }
     .stSelectbox > div > div,
     .stMultiSelect > div > div {
-        background: rgba(28,44,18,0.92) !important;
-        border: 1px solid var(--forest-border) !important;
-        border-radius: 4px !important;
-        color: var(--fog) !important;
-        box-shadow: 2px 2px 0 var(--bark-dark) !important;
+        background: #FFFFFF !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 8px !important;
+        color: var(--text-dark) !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.05) !important;
+        transition: all 0.3s ease !important;
     }
     .stSelectbox > div > div:hover {
-        border-color: var(--moss) !important;
+        border-color: var(--accent-warm) !important;
+        box-shadow: 0 2px 8px rgba(255,140,0,0.1) !important;
     }
     .stMultiSelect span[data-baseweb="tag"] {
-        background: var(--moss-dark) !important;
-        border-radius: 3px !important;
-        color: var(--lichen) !important;
-        border: 1px solid var(--moss) !important;
+        background: linear-gradient(135deg, var(--accent-green), #52C281) !important;
+        border-radius: 6px !important;
+        color: white !important;
+        border: 1px solid var(--accent-green) !important;
+    }
+    
+    @media (max-width: 480px) {
+        .stSelectbox > div > div,
+        .stMultiSelect > div > div {
+            border-radius: 6px !important;
+            border: 1px solid var(--border) !important;
+        }
     }
 
     /* ── Scrollbar ── */
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: var(--forest-deep); }
-    ::-webkit-scrollbar-thumb { background: var(--canopy); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--moss); }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: rgba(224,224,224,0.3); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { 
+        background: linear-gradient(180deg, var(--accent-warm), var(--accent-green));
+        border-radius: 4px; 
+        box-shadow: 0 0 6px rgba(255,140,0,0.2);
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent-orange); }
 
     /* ── Base text ── */
     hr {
         border: none !important;
-        border-top: 1px solid var(--forest-border) !important;
+        border-top: 2px solid var(--accent-warm) !important;
         margin: 18px 0 !important;
     }
-    p, li { line-height: 1.75 !important; color: var(--fog-dim) !important; }
-    a { color: var(--moss) !important; }
-    strong { color: var(--fog) !important; font-weight: 700 !important; }
+    p, li { line-height: 1.65 !important; color: var(--text-light) !important; }
+    a { color: var(--accent-warm) !important; transition: color 0.2s ease !important; }
+    a:hover { color: var(--accent-orange) !important; }
+    strong { color: var(--text-dark) !important; font-weight: 700 !important; }
 
     /* ── Streamlit alerts ── */
     .stAlert {
-        border-radius: 4px !important;
-        font-family: 'Share Tech Mono', monospace !important;
-        background: rgba(28,44,18,0.9) !important;
-        border: 1px solid var(--forest-border) !important;
-        color: var(--fog-dim) !important;
+        border-radius: 8px !important;
+        font-family: 'Poppins', sans-serif !important;
+        background: #FFFFFF !important;
+        border: 1px solid var(--border) !important;
+        border-left: 4px solid var(--accent-warm) !important;
+        color: var(--text-dark) !important;
+        box-shadow: var(--shadow-light) !important;
     }
     .stAlert > div {
-        color: var(--fog-dim) !important;
-        font-size: 0.80rem !important;
+        color: var(--text-dark) !important;
+        font-size: 0.82rem !important;
+    }
+    
+    @media (max-width: 480px) {
+        .stAlert {
+            border-radius: 6px !important;
+            border: 1px solid var(--border) !important;
+            border-left: 3px solid var(--accent-warm) !important;
+        }
     }
 
     /* ── Caption ── */
-    .stCaption, small { color: var(--fog-faint) !important; }
-
-    /* ── Sidebar links ── */
-    [data-testid="stSidebar"] a {
-        color: var(--moss) !important;
-        text-decoration: none !important;
-    }
-    [data-testid="stSidebar"] a:hover {
-        color: var(--lichen) !important;
-        text-decoration: underline !important;
-    }
-
-    /* ── Card pulse animation ── */
-    @keyframes forestPulse {
-        0%, 100% { opacity: 0.6; width: 90px; }
-        50%       { opacity: 1.0; width: 130px; }
-    }
-
-    /* ── Global focus ring ── */
-    *:focus-visible {
-        outline: 2px solid var(--moss) !important;
-        outline-offset: 2px !important;
-    }
-
-    /* ── Sidebar spacing ── */
-    [data-testid="stSidebar"] .stSelectbox,
-    [data-testid="stSidebar"] .stSlider {
-        margin-top: 8px !important;
-    }
-
-    /* ── Oracle chat scroll ── */
-    #oracle-chat-scroll {
-        scrollbar-width: thin;
-        scrollbar-color: var(--canopy) var(--forest-deep);
-    }
-    #oracle-chat-scroll::-webkit-scrollbar { width: 3px; }
-    #oracle-chat-scroll::-webkit-scrollbar-thumb { background: var(--canopy); }
-
-    /* ── Responsive ── */
-    @media (max-width: 900px) {
-        .sh-card-value { font-size: 1.6rem !important; }
-        .stTabs [data-baseweb="tab"] { padding: 10px 14px !important; font-size: 0.72rem !important; }
-    }
-
-    /* ── Slider track/thumb — forest green ── */
-    [data-testid="stSlider"] div[role="slider"] {
-        background: var(--moss) !important;
-        border: 2px solid var(--lichen) !important;
-        box-shadow: 0 0 8px var(--moss-glow) !important;
-    }
-    [data-testid="stSlider"] > div > div > div {
-        background: var(--forest-border) !important;
-    }
-    [data-testid="stSlider"] > div > div > div > div {
-        background: var(--moss) !important;
-    }
-
-    /* ── Language slider special styling ── */
-    div[data-testid="stSelectSlider"] > div > div {
-        background: rgba(20,32,16,0.95) !important;
-        border: 1px solid var(--forest-border) !important;
-        border-radius: 6px !important;
-    }
-    div[data-testid="stSelectSlider"] div[role="slider"] {
-        background: var(--moss) !important;
-        border: 2px solid var(--lichen) !important;
-        box-shadow: 0 0 10px var(--moss-glow) !important;
-        border-radius: 50% !important;
-    }
-    div[data-testid="stSelectSlider"] > div > div > div {
-        background: var(--forest-border) !important;
-        height: 4px !important;
-        border-radius: 2px !important;
-    }
-    div[data-testid="stSelectSlider"] > div > div > div > div {
-        background: linear-gradient(90deg, var(--moss-dark), var(--moss)) !important;
-        border-radius: 2px !important;
-    }
-    div[data-testid="stSelectSlider"] .stSlider p {
-        color: var(--fog-dim) !important;
-        font-family: 'Share Tech Mono', monospace !important;
-        font-size: 0.68rem !important;
-        letter-spacing: 0.12em !important;
-    }
+    .stCaption, small { color: var(--text-light) !important; }
 
     /* ── Input field global ── */
     div[data-testid="stTextInput"] > div > div > input {
-        background: rgba(20,32,16,0.92) !important;
-        border: 1px solid var(--forest-border) !important;
-        border-left: 3px solid var(--moss) !important;
-        border-radius: 4px !important;
-        color: var(--fog) !important;
-        font-family: 'Share Tech Mono', monospace !important;
-        font-size: 0.84rem !important;
-        letter-spacing: 0.05em !important;
-        padding: 10px 14px !important;
-        box-shadow: 2px 2px 0 var(--bark-dark) !important;
+        background: #FFFFFF !important;
+        border: 1px solid var(--border) !important;
+        border-left: 3px solid var(--accent-warm) !important;
+        border-radius: 8px !important;
+        color: var(--text-dark) !important;
+        font-family: 'Poppins', sans-serif !important;
+        font-size: 0.86rem !important;
+        letter-spacing: 0.01em !important;
+        padding: 11px 14px !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.05) !important;
+        transition: all 0.3s ease !important;
     }
     div[data-testid="stTextInput"] > div > div > input:focus {
-        border-color: var(--moss) !important;
-        border-left-color: var(--lichen) !important;
-        box-shadow: 2px 2px 0 var(--bark-dark), 0 0 14px var(--moss-glow) !important;
+        border-color: var(--accent-warm) !important;
+        border-left-color: var(--accent-warm) !important;
+        box-shadow: 0 4px 16px rgba(255,159,28,0.2) !important;
         outline: none !important;
     }
     div[data-testid="stTextInput"] > div > div > input::placeholder {
-        color: var(--fog-faint) !important;
+        color: #C9A79E !important;
+    }
+    
+    @media (max-width: 480px) {
+        div[data-testid="stTextInput"] > div > div > input {
+            font-size: 0.80rem !important;
+            padding: 10px 12px !important;
+            border-radius: 6px !important;
+            border: 1.5px solid var(--accent-sky) !important;
+        }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+        h1 { font-size: 1.8rem !important; }
+    }
+    
+    @media (max-width: 768px) {
+        h1 { font-size: 1.5rem !important; }
+    }
+    
+    @media (max-width: 480px) {
+        h1 { font-size: 1.2rem !important; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -869,11 +924,11 @@ def aqi_info(pm25: float) -> tuple[str, str, str]:
     if pm25 <= 150:  return "Toxic Bloom",     "Mekar Beracun",     "#8E2A0A"
     return               "The Red Fog",        "Kabut Merah",       "#2A0808"
 
-# ─── Plotly base layout (Silent Hill palette) ──
+# ─── Plotly base layout (Farming palette) ──
 SH_PLOT = dict(
     template="plotly_dark",
-    paper_bgcolor="#000000",
-    plot_bgcolor="#000000",
+    paper_bgcolor="#FFFFFF",
+    plot_bgcolor="#FFFFFF",
     font=dict(family="Share Tech Mono, monospace", size=11, color="#9A9288"),
     margin=dict(l=32, r=12, t=28, b=8),
 )
@@ -890,25 +945,22 @@ with st.sidebar:
 
     # ── Logo / title ──────────────────────────
     st.markdown("""
-    <div style="padding:14px 0 8px 0;">
-        <div style="font-family:'Share Tech Mono',monospace; font-size:0.55rem;
-                    color:#7AB83C; letter-spacing:0.28em; text-transform:uppercase;
-                    margin-bottom:6px;">&#x1F4D3; SURVIVAL LOG - DAY ???</div>
-        <div style="font-family:'Cinzel',serif; font-size:1.70rem;
-                    color:#D0DEB8; letter-spacing:0.04em; line-height:1.15;
-                    text-shadow:0 0 20px rgba(122,184,60,0.40), 0 0 50px rgba(122,184,60,0.15);">
-            THE<br>FOREST
+    <div style="padding:16px 0 12px 0;">
+        <div style="font-family:'Poppins',sans-serif; font-size:0.70rem;
+                    color:#E8B873; letter-spacing:0.08em; text-transform:uppercase;
+                    margin-bottom:8px;">🐄 🐔 🐑</div>
+        <div style="font-family:'Poppins',sans-serif; font-size:1.80rem; font-weight:700;
+                    color:#2C2622; letter-spacing:-0.01em; line-height:1.1;">
+            Farm<br>Weather
         </div>
-        <div style="font-family:'Share Tech Mono',monospace; font-size:0.60rem;
-                    color:#607850; letter-spacing:0.18em; margin-top:5px;
-                    text-transform:uppercase;">
-            Environmental Monitor
-        </div>
-        <div style="border-top:2px solid #4E7A22; margin-top:12px;
-                    padding-top:8px; font-family:'Share Tech Mono',monospace;
-                    font-size:0.60rem; color:#7AB83C; letter-spacing:0.18em;
-                    text-shadow:0 0 8px rgba(122,184,60,0.6);">
-            &#127807; STAY ALIVE - STAY HIDDEN
+        <div style="font-family:'Poppins',sans-serif; font-size:0.70rem;
+                    color:#6B6560; letter-spacing:0.02em; margin-top:6px;
+                    text-transform:none;">Climate & Weather Tracker</div>
+        <div style="border-top:2px solid #E8E6E2; margin-top:12px;
+                    padding-top:10px; font-family:'Poppins',sans-serif;
+                    font-size:0.65rem; color:#A8A39E; letter-spacing:0.02em;
+                    text-transform:none;">
+                    🌾 Track weather for your farm
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -986,39 +1038,33 @@ h_subtitle = t(
 h_location = t("Monitoring:", "Memantau:")
 
 st.markdown(f"""
-<div style="border:1px solid #2C4018; border-top:4px solid #7AB83C;
-            border-radius:0 0 6px 6px;
-            background:rgba(12,26,8,0.95); padding:18px 22px 16px;
-            backdrop-filter:blur(6px);
-            box-shadow:4px 4px 0px #0C1A08, 0 0 40px rgba(122,184,60,0.12);
+<div style="border:1px solid #E8E6E2; border-top:3px solid #E8B873;
+            border-radius:6px;
+            background:#FFFFFF; padding:20px 24px;
+            box-shadow:0 2px 8px rgba(0,0,0,0.06);
             margin-bottom:0; position:relative;">
-    <div style="position:absolute; top:0; left:0; right:0; height:1px;
-                background:linear-gradient(90deg,#7AB83C,#C4DC5C,transparent);"></div>
-    <div style="font-family:'Share Tech Mono',monospace; font-size:0.60rem;
-                letter-spacing:0.26em; color:#4E7A22; margin-bottom:10px;
+    <div style="font-family:'Poppins',sans-serif; font-size:0.70rem;
+                letter-spacing:0.06em; color:#A8A39E; margin-bottom:8px;
                 text-transform:uppercase;">
-        📓 THE FOREST — ENVIRONMENTAL SURVIVAL LOG
+        🌾 Farm Weather Tracker
     </div>
-    <h1 style="font-family:'Cinzel',serif; font-size:2.5rem; font-weight:700;
-               color:#D0DEB8; margin:0; letter-spacing:0.05em; line-height:1.0;
-               text-shadow:0 0 22px rgba(122,184,60,0.35), 0 0 60px rgba(122,184,60,0.12);">
-        THE FOREST
+    <h1 style="font-family:'Poppins',sans-serif; font-size:2.2rem; font-weight:700;
+               color:#2C2622; margin:0; letter-spacing:-0.01em; line-height:1.1;">
+        Farm Forecast
     </h1>
-    <div style="font-family:'Share Tech Mono',monospace; font-size:0.74rem;
-                color:#607850; margin:10px 0 0 0; letter-spacing:0.05em;
-                border-top:1px solid #2C4018; padding-top:10px;">
+    <div style="font-family:'Poppins',sans-serif; font-size:0.80rem;
+                color:#6B6560; margin:12px 0 0 0; letter-spacing:0.01em;
+                border-top:1px solid #E8E6E2; padding-top:10px;">
         {h_subtitle}<br>
-        <span style="color:#7AB83C;">🌿 {h_location}</span>
-        <span style="color:#9AAE7C;"> {city_name}</span>
+        <span style="color:#E8B873;">📍 {h_location}</span>
+        <span style="color:#A8A39E;"> {city_name}</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 
 # ─────────────────────────────────────────────
-# FULL-BODY ANIMATION — injected into parent DOM
-# Horror: ocean swells · bioluminescence · rig pipes
-#         oil drip · worker silhouette · sonar glitch
+# FULL-BODY ANIMATION — Farm Theme with Vibrant Animals
 # ─────────────────────────────────────────────
 components.html("""
 <!DOCTYPE html><html><head>
@@ -1027,541 +1073,242 @@ components.html("""
 <body style="background:transparent; overflow:hidden; width:0; height:0;">
 <script>
 (function() {
-
 function init() {
   const P = window.parent.document;
   if (!P) return;
-  ['forest-main-cv','forest-drip-cv'].forEach(id => {
-    const el = P.getElementById(id); if (el) el.remove();
-  });
-
-  /* ── MAIN CANVAS ── */
-  const cv = P.createElement('canvas');
-  cv.id = 'forest-main-cv';
-  Object.assign(cv.style, {
+  const cv = P.getElementById('farm-doodle-cv');
+  if (cv) cv.remove();
+  
+  const canvas = P.createElement('canvas');
+  canvas.id = 'farm-doodle-cv';
+  Object.assign(canvas.style, {
     position:'fixed', top:'0', left:'0',
     width:'100vw', height:'100vh',
-    pointerEvents:'none', zIndex:'0',
+    pointerEvents:'none', zIndex:'0', opacity:'0.12'
   });
-  P.body.appendChild(cv);
-  const ctx = cv.getContext('2d');
-  function resize() { cv.width=window.innerWidth; cv.height=window.innerHeight; }
+  P.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
   resize();
-  window.addEventListener('resize', () => { resize(); repositionTrees(); });
-
-  /* ── SAP / RAIN DRIP CANVAS — top strip ── */
-  const dc = P.createElement('canvas');
-  dc.id = 'forest-drip-cv';
-  Object.assign(dc.style, {
-    position:'fixed', top:'0', left:'0',
-    width:'100vw', height:'160px',
-    pointerEvents:'none', zIndex:'1',
-  });
-  P.body.appendChild(dc);
-  const dctx = dc.getContext('2d');
-  function resizeDrip() { dc.width=window.innerWidth; dc.height=160; }
-  resizeDrip();
-  window.addEventListener('resize', resizeDrip);
-
-  /* ── PALETTE ── */
-  const C = {
-    fog1:    'rgba(180,200,140,',   // pale yellow-green fog
-    fog2:    'rgba(140,170,90,',    // moss fog
-    fog3:    'rgba(100,130,50,',    // deep forest fog
-    fire1:   'rgba(196,220,80,',    // firefly bright yellow-green
-    fire2:   'rgba(140,180,40,',    // firefly dim
-    spore1:  'rgba(168,210,60,',    // spore cloud
-    leaf1:   '#5A8C22',
-    leaf2:   '#3E6A14',
-    leaf3:   '#C8A030',             // autumn leaf gold
-    sap:     '#6A4010',
-    bark:    'rgba(40,24,8,',
-  };
-
-  /* ── CANOPY FOG WISP ── */
-  class ForestFog {
-    constructor() { this.reset(true); }
-    reset(init) {
-      const W=cv.width, H=cv.height;
-      this.x  = init ? Math.random()*W : -500;
-      this.y  = H*(0.05 + Math.random()*0.90);
-      this.w  = 400 + Math.random()*700;
-      this.h  = 70  + Math.random()*180;
-      this.vx = 0.04 + Math.random()*0.12;
-      this.a  = 0.04 + Math.random()*0.10;
-      const r = Math.random();
-      this.col = r<0.45 ? C.fog1 : r<0.75 ? C.fog2 : C.fog3;
-      this.wb  = Math.random()*Math.PI*2;
-      this.wbs = 0.002 + Math.random()*0.003;
+  window.addEventListener('resize', resize);
+  
+  class AnimatedCow {
+    constructor(x, y, speed) {
+      this.x = x;
+      this.y = y;
+      this.speed = speed;
+      this.time = 0;
+      this.tailSwing = 0;
     }
     update() {
-      this.x  += this.vx;
-      this.wb += this.wbs;
-      this.y  += Math.sin(this.wb)*0.4;
-      if (this.x > cv.width+550) this.reset(false);
+      this.x += this.speed;
+      this.time += 0.02;
+      this.tailSwing = Math.sin(this.time * 2) * 8;
+      if (this.x > canvas.width + 100) this.x = -100;
     }
     draw() {
-      const g=ctx.createRadialGradient(
-        this.x+this.w/2,this.y,12,
-        this.x+this.w/2,this.y,this.w*0.65
-      );
-      g.addColorStop(0,  this.col+(this.a*1.5).toFixed(3)+')');
-      g.addColorStop(0.5,this.col+(this.a*0.6).toFixed(3)+')');
-      g.addColorStop(1,  this.col+'0)');
-      ctx.beginPath();
-      ctx.ellipse(this.x+this.w/2,this.y,this.w/2,this.h/2,0,0,Math.PI*2);
-      ctx.fillStyle=g; ctx.fill();
-    }
-  }
-
-  /* ── FIREFLY ── */
-  class Firefly {
-    constructor() { this.reset(true); }
-    reset(init) {
-      const W=cv.width, H=cv.height;
-      this.x     = init ? Math.random()*W : Math.random()*W;
-      this.y     = init ? H*(0.3+Math.random()*0.65) : H*(0.85+Math.random()*0.2);
-      this.tx    = this.x + (Math.random()-0.5)*120;
-      this.ty    = this.y - 20 - Math.random()*80;
-      this.r     = 2.5 + Math.random()*5;
-      this.a     = 0;
-      this.pulse = Math.random()*Math.PI*2;
-      this.pspd  = 0.04 + Math.random()*0.06;
-      this.vx    = (Math.random()-0.5)*0.5;
-      this.vy    = -(0.12 + Math.random()*0.25);
-      this.col   = Math.random()<0.7 ? C.fire1 : C.fire2;
-      this.life  = 0;
-      this.max   = 200 + Math.random()*250;
-    }
-    update() {
-      this.pulse += this.pspd;
-      this.x     += this.vx + Math.cos(this.pulse*0.5)*0.5;
-      this.y     += this.vy;
-      this.life++;
-      const on = Math.sin(this.pulse) > 0.1;
-      this.a = on ? 0.55+0.4*Math.sin(this.pulse) : 0.03;
-      if (this.life>this.max || this.y<-20) this.reset(false);
-    }
-    draw() {
-      if (this.a<0.04) return;
-      const g=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r*3.5);
-      g.addColorStop(0,  this.col+(this.a*1.0).toFixed(3)+')');
-      g.addColorStop(0.35,this.col+(this.a*0.55).toFixed(3)+')');
-      g.addColorStop(1,  this.col+'0)');
-      ctx.beginPath(); ctx.arc(this.x,this.y,this.r*3.5,0,Math.PI*2);
-      ctx.fillStyle=g; ctx.fill();
-      ctx.beginPath(); ctx.arc(this.x,this.y,this.r*0.7,0,Math.PI*2);
-      ctx.fillStyle=`rgba(230,255,180,${this.a})`; ctx.fill();
-    }
-  }
-
-  /* ── SPORE CLOUD ── */
-  class Spore {
-    constructor() { this.reset(true); }
-    reset(init) {
-      const W=cv.width, H=cv.height;
-      this.x   = init ? Math.random()*W : Math.random()*W;
-      this.y   = init ? Math.random()*H : H+15;
-      this.r   = 20 + Math.random()*55;
-      this.vx  = (Math.random()-0.5)*0.3;
-      this.vy  = -(0.06 + Math.random()*0.18);
-      this.a   = 0.03 + Math.random()*0.08;
-      this.life= 0; this.max=320+Math.random()*280;
-      this.wb  = Math.random()*Math.PI*2;
-    }
-    update() {
-      this.wb += 0.015;
-      this.x  += this.vx + Math.sin(this.wb)*0.25;
-      this.y  += this.vy; this.life++;
-      if (this.life>this.max||this.y<-this.r) this.reset(false);
-    }
-    draw() {
-      const fade=Math.min(this.life/70,1)*Math.min((this.max-this.life)/70,1);
-      const g=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r);
-      const pa=(this.a*fade*2.0).toFixed(3);
-      g.addColorStop(0,  C.spore1+pa+')');
-      g.addColorStop(0.5,C.spore1+(this.a*fade*0.7).toFixed(3)+')');
-      g.addColorStop(1,  C.spore1+'0)');
-      ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
-      ctx.fillStyle=g; ctx.fill();
-    }
-  }
-
-  /* ── FALLING LEAF ── */
-  class Leaf {
-    constructor() { this.reset(); }
-    reset() {
-      this.x    = Math.random()*cv.width;
-      this.y    = -15;
-      this.vx   = (Math.random()-0.5)*1.0;
-      this.vy   = 0.3 + Math.random()*1.0;
-      this.rot  = Math.random()*Math.PI*2;
-      this.rotV = (Math.random()-0.5)*0.055;
-      this.w    = 8  + Math.random()*14;
-      this.h    = 5  + Math.random()*9;
-      this.a    = 0.5 + Math.random()*0.45;
-      this.wb   = Math.random()*Math.PI*2;
-      const r   = Math.random();
-      this.col  = r<0.55 ? C.leaf1 : r<0.80 ? C.leaf2 : C.leaf3;
-    }
-    update() {
-      this.wb+=0.04; this.x+=this.vx+Math.sin(this.wb)*0.6;
-      this.y+=this.vy; this.rot+=this.rotV;
-      if(this.y>cv.height+20) this.reset();
-    }
-    draw() {
-      ctx.save(); ctx.translate(this.x,this.y); ctx.rotate(this.rot);
-      ctx.globalAlpha=this.a;
-      ctx.fillStyle=this.col;
-      ctx.beginPath();
-      ctx.ellipse(0,0,this.w/2,this.h/2,0,0,Math.PI*2);
+      ctx.save(); ctx.translate(this.x, this.y);
+      // body
+      ctx.fillStyle = '#A89688';
+      ctx.beginPath(); ctx.ellipse(0, 0, 40, 25, 0, 0, Math.PI*2);
       ctx.fill();
-      // vein
-      ctx.beginPath(); ctx.moveTo(-this.w/2,0); ctx.lineTo(this.w/2,0);
-      ctx.strokeStyle='rgba(0,0,0,0.15)'; ctx.lineWidth=0.5; ctx.stroke();
-      ctx.restore(); ctx.globalAlpha=1;
+      // head
+      ctx.beginPath(); ctx.arc(35, -15, 18, 0, Math.PI*2);
+      ctx.fill();
+      // ears with animation
+      ctx.beginPath(); ctx.ellipse(28, -28 + Math.sin(this.time)*2, 6, 10, -0.5, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(42, -28 + Math.sin(this.time + 0.5)*2, 6, 10, 0.5, 0, Math.PI*2); ctx.fill();
+      // snout
+      ctx.fillStyle = '#C9A79E';
+      ctx.beginPath(); ctx.arc(50, -12, 8, 0, Math.PI*2); ctx.fill();
+      // horns
+      ctx.strokeStyle = '#A89688'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(24, -35); ctx.lineTo(16, -45);
+      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(46, -35); ctx.lineTo(54, -45);
+      ctx.stroke();
+      // legs
+      ctx.fillStyle = '#A89688';
+      [-20, -5, 5, 20].forEach((ox, i) => {
+        const legBob = Math.sin(this.time * 3 + i) * 2;
+        ctx.fillRect(ox-3, 20 + legBob, 6, 20);
+      });
+      // tail with swing
+      ctx.strokeStyle = '#A89688'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(-45, 5);
+      ctx.quadraticCurveTo(-55, 5 + this.tailSwing, -50, 15);
+      ctx.stroke();
+      ctx.restore();
     }
   }
-
-  /* ── TREE SILHOUETTE ── */
-  class TreeSilhouette {
-    constructor(x, y, sc) {
-      this.x=x; this.y=y; this.sc=sc;
-      this.sway=0; this.swayPh=Math.random()*Math.PI*2;
+  
+  class AnimatedChicken {
+    constructor(x, y, speed) {
+      this.x = x;
+      this.y = y;
+      this.speed = speed;
+      this.time = 0;
     }
     update() {
-      this.swayPh += 0.006;
-      this.sway = Math.sin(this.swayPh)*0.018*this.sc;
+      this.x += this.speed;
+      this.time += 0.03;
+      if (this.x > canvas.width + 100) this.x = -100;
     }
     draw() {
-      const sc=this.sc;
-      ctx.save(); ctx.translate(this.x,this.y);
-      ctx.globalAlpha=0.55;
-      // trunk
-      ctx.fillStyle='rgba(20,12,4,0.9)';
-      const tw=12*sc, th=100*sc;
-      ctx.beginPath();
-      ctx.moveTo(-tw/2,0); ctx.lineTo(-tw/2*0.7,-th);
-      ctx.lineTo(tw/2*0.7,-th); ctx.lineTo(tw/2,0);
-      ctx.closePath(); ctx.fill();
-      // canopy — layered circles
-      ctx.save(); ctx.rotate(this.sway);
-      const layers=[
-        {y:-th*0.65, r:48*sc, a:0.80},
-        {y:-th*0.85, r:38*sc, a:0.75},
-        {y:-th*1.05, r:28*sc, a:0.70},
-        {y:-th*0.55, r:40*sc, a:0.65},
-      ];
-      layers.forEach(l=>{
-        ctx.beginPath(); ctx.arc(0,l.y,l.r,0,Math.PI*2);
-        ctx.fillStyle=`rgba(16,24,8,${l.a})`; ctx.fill();
+      ctx.save(); ctx.translate(this.x, this.y);
+      // body bobbing
+      const bodyBob = Math.sin(this.time * 3) * 3;
+      ctx.fillStyle = '#FF9F1C';
+      ctx.beginPath(); ctx.ellipse(0, bodyBob, 22, 28, 0, 0, Math.PI*2); ctx.fill();
+      // head
+      ctx.beginPath(); ctx.arc(10, -25 + bodyBob, 12, 0, Math.PI*2); ctx.fill();
+      // comb
+      ctx.fillStyle = '#FF6B9D';
+      for(let i = 0; i < 3; i++) {
+        const wobble = Math.sin(this.time * 2 + i) * 2;
+        ctx.beginPath(); ctx.moveTo(5 + i*5, -32 + wobble); ctx.lineTo(2 + i*5, -42 + wobble); 
+        ctx.lineTo(8 + i*5, -38 + wobble); ctx.closePath(); ctx.fill();
+      }
+      // eye
+      ctx.fillStyle = '#2C2622'; ctx.beginPath(); ctx.arc(15, -25 + bodyBob, 3, 0, Math.PI*2); ctx.fill();
+      // beak
+      ctx.fillStyle = '#FFD93D'; ctx.beginPath(); ctx.moveTo(20, -23 + bodyBob); ctx.lineTo(28, -22 + bodyBob); 
+      ctx.lineTo(20, -20 + bodyBob); ctx.closePath(); ctx.fill();
+      // legs with step animation
+      ctx.strokeStyle = '#FFD93D'; ctx.lineWidth = 2;
+      const legLift1 = Math.sin(this.time * 4) > 0 ? 2 : 0;
+      const legLift2 = Math.sin(this.time * 4 + Math.PI) > 0 ? 2 : 0;
+      ctx.beginPath(); ctx.moveTo(-8, 25 + bodyBob); ctx.lineTo(-8, 35 + bodyBob - legLift1);
+      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(8, 25 + bodyBob); ctx.lineTo(8, 35 + bodyBob - legLift2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+  
+  class AnimatedSheep {
+    constructor(x, y, speed) {
+      this.x = x;
+      this.y = y;
+      this.speed = speed;
+      this.time = 0;
+    }
+    update() {
+      this.x += this.speed;
+      this.time += 0.015;
+      if (this.x > canvas.width + 100) this.x = -100;
+    }
+    draw() {
+      ctx.save(); ctx.translate(this.x, this.y);
+      // wool - fluffy with animation
+      ctx.fillStyle = '#FFFACD';
+      ctx.beginPath(); ctx.arc(0, 0 + Math.sin(this.time)*2, 28, 0, Math.PI*2); ctx.fill();
+      // head
+      ctx.fillStyle = '#C9A79E';
+      ctx.beginPath(); ctx.arc(35, 0, 14, 0, Math.PI*2); ctx.fill();
+      // ears
+      ctx.beginPath(); ctx.ellipse(30, -12 + Math.sin(this.time + 1)*1, 5, 8, -0.4, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(40, -12 + Math.sin(this.time + 2)*1, 5, 8, 0.4, 0, Math.PI*2); ctx.fill();
+      // eyes
+      ctx.fillStyle = '#2C2622';
+      ctx.beginPath(); ctx.arc(40, -3, 2, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(40, 3, 2, 0, Math.PI*2); ctx.fill();
+      // legs
+      ctx.strokeStyle = '#C9A79E'; ctx.lineWidth = 2;
+      [-12, -4, 4, 12].forEach((ox, i) => {
+        const legBob = Math.sin(this.time * 2 + i) * 2;
+        ctx.beginPath(); ctx.moveTo(ox, 25); ctx.lineTo(ox, 35 + legBob); ctx.stroke();
       });
       ctx.restore();
-      ctx.restore(); ctx.globalAlpha=1;
     }
   }
-
-  /* ── SURVIVOR FIGURE ── */
-  class SurvivorFigure {
-    constructor() { this.reset(); }
-    reset() {
-      this.x    = cv.width*(0.1+Math.random()*0.8);
-      this.y    = cv.height*(0.38+Math.random()*0.38);
-      this.sc   = 0.6+Math.random()*0.5;
-      this.a    = 0;
-      this.state= 'wait'; this.timer=0;
-      this.waitT= 800+Math.random()*1600;
-      this.visT = 140+Math.random()*220;
-      this.fSpd = 0.003+Math.random()*0.004;
-      this.bob  = Math.random()*Math.PI*2;
-      this.torch= Math.random()>0.4;
+  
+  class AnimatedPig {
+    constructor(x, y, speed) {
+      this.x = x;
+      this.y = y;
+      this.speed = speed;
+      this.time = 0;
     }
     update() {
-      this.timer++; this.bob+=0.006;
-      if (this.state==='wait'){if(this.timer>this.waitT){this.state='fadein';this.timer=0;}}
-      else if (this.state==='fadein'){this.a+=this.fSpd;if(this.a>=0.40){this.a=0.40;this.state='visible';this.timer=0;}}
-      else if (this.state==='visible'){
-        if(Math.random()<0.007)this.a=0.1+Math.random()*0.25; else this.a=0.40;
-        if(this.timer>this.visT){this.state='fadeout';this.timer=0;}
-      }
-      else if (this.state==='fadeout'){this.a-=this.fSpd*1.4;if(this.a<=0){this.a=0;this.reset();this.state='wait';this.timer=0;}}
+      this.x += this.speed;
+      this.time += 0.025;
+      if (this.x > canvas.width + 100) this.x = -100;
     }
     draw() {
-      if(this.a<=0.01) return;
-      const sc=this.sc, bob=Math.sin(this.bob)*2*sc;
-      ctx.save(); ctx.globalAlpha=this.a;
-      ctx.translate(this.x, this.y+bob);
-      ctx.fillStyle='rgba(10,18,6,0.95)';
-      ctx.shadowColor='rgba(196,220,80,0.25)'; ctx.shadowBlur=12;
-      const h=85*sc;
+      ctx.save(); ctx.translate(this.x, this.y);
+      const wiggle = Math.sin(this.time * 2) * 2;
+      ctx.fillStyle = '#FFB8C6';
+      // body
+      ctx.beginPath(); ctx.ellipse(wiggle, 0, 32, 22, 0, 0, Math.PI*2); ctx.fill();
+      // head
+      ctx.beginPath(); ctx.arc(30 + wiggle, -8, 16, 0, Math.PI*2); ctx.fill();
+      // snout
+      ctx.beginPath(); ctx.ellipse(42 + wiggle, -8, 10, 8, 0, 0, Math.PI*2); ctx.fill();
+      // nostrils
+      ctx.fillStyle = '#FF99B9';
+      ctx.beginPath(); ctx.arc(38 + wiggle, -8, 2, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(46 + wiggle, -8, 2, 0, Math.PI*2); ctx.fill();
+      // ears
+      ctx.fillStyle = '#FFB8C6';
+      ctx.beginPath(); ctx.ellipse(22 + wiggle, -18 + Math.sin(this.time)*2, 8, 12, -0.6, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(38 + wiggle, -18 + Math.sin(this.time + 1)*2, 8, 12, 0.6, 0, Math.PI*2); ctx.fill();
       // legs
-      ctx.fillRect(-9*sc,0,7*sc,h*0.28); ctx.fillRect(2*sc,0,7*sc,h*0.28);
-      // torso — survival jacket
-      ctx.beginPath();
-      ctx.moveTo(-11*sc,0); ctx.lineTo(11*sc,0);
-      ctx.lineTo(8*sc,-h*0.52); ctx.lineTo(-8*sc,-h*0.52);
-      ctx.closePath(); ctx.fill();
-      // backpack
-      ctx.beginPath();
-      ctx.roundRect(8*sc,-h*0.48,10*sc,18*sc,2);
-      ctx.fillStyle='rgba(20,30,12,0.85)'; ctx.fill();
-      ctx.fillStyle='rgba(10,18,6,0.95)';
-      // shoulders
-      ctx.fillRect(-13*sc,-h*0.52,26*sc,5*sc);
-      // neck+head
-      ctx.fillRect(-3*sc,-h*0.60,6*sc,h*0.09);
-      ctx.beginPath(); ctx.arc(0,-h*0.68,8*sc,0,Math.PI*2); ctx.fill();
-      // hood
-      ctx.beginPath();
-      ctx.moveTo(-10*sc,-h*0.60);
-      ctx.bezierCurveTo(-12*sc,-h*0.80,12*sc,-h*0.80,10*sc,-h*0.60);
-      ctx.closePath(); ctx.fill();
-      // torch glow if carrying
-      if (this.torch) {
-        ctx.beginPath(); ctx.moveTo(-11*sc,-h*0.38); ctx.lineTo(-22*sc,-h*0.52);
-        ctx.strokeStyle='rgba(10,18,6,0.95)'; ctx.lineWidth=4*sc; ctx.stroke();
-        const tg=ctx.createRadialGradient(-24*sc,-h*0.54,0,-24*sc,-h*0.54,18*sc);
-        tg.addColorStop(0,`rgba(220,190,60,${this.a*0.7})`);
-        tg.addColorStop(0.5,`rgba(180,140,30,${this.a*0.25})`);
-        tg.addColorStop(1,'rgba(140,100,20,0)');
-        ctx.beginPath(); ctx.arc(-24*sc,-h*0.54,18*sc,0,Math.PI*2);
-        ctx.fillStyle=tg; ctx.fill();
-      }
+      ctx.fillStyle = '#FFB8C6';
+      [-16, -4, 4, 16].forEach((ox, i) => {
+        const legBob = Math.sin(this.time * 3 + i) * 2;
+        ctx.fillRect(ox-3 + wiggle, 20 + legBob, 6, 18);
+      });
+      // tail curl
+      ctx.strokeStyle = '#FFB8C6'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(-35 + wiggle, -5);
+      ctx.quadraticCurveTo(-40 + wiggle + Math.sin(this.time)*3, Math.sin(this.time)*5, -35 + wiggle, 10);
+      ctx.stroke();
       ctx.restore();
     }
   }
-
-  /* ── CREATURE EYE (amber) ── */
-  class CreatureEye {
-    constructor() { this.reset(); }
-    reset() {
-      this.x=cv.width*(0.04+Math.random()*0.92);
-      this.y=cv.height*(0.20+Math.random()*0.55);
-      this.a=0; this.state='wait'; this.timer=0;
-      this.wait=600+Math.random()*1200;
-      this.open=90+Math.random()*160;
-      // pair offset
-      this.dx=6+Math.random()*8;
-    }
-    update() {
-      this.timer++;
-      if(this.state==='wait'){
-        if(this.timer>this.wait){
-          this.state='open';this.timer=0;
-          this.x=cv.width*(0.04+Math.random()*0.92);
-          this.y=cv.height*(0.20+Math.random()*0.55);
-          this.dx=6+Math.random()*8;
-        }
-      } else if(this.state==='open'){
-        this.a=Math.min(this.a+0.022,0.70);
-        if(this.timer>this.open){this.state='blink';this.timer=0;}
-      } else if(this.state==='blink'){
-        this.a=this.timer%7<3?0:0.70;
-        if(this.timer>18){this.state='close';this.timer=0;}
-      } else if(this.state==='close'){
-        this.a-=0.018; if(this.a<=0){this.a=0;this.reset();}
-      }
-    }
-    drawOne(x,y) {
-      const g=ctx.createRadialGradient(x,y,0,x,y,14);
-      g.addColorStop(0,  `rgba(220,170,30,${this.a*0.95})`);
-      g.addColorStop(0.4,`rgba(180,120,10,${this.a*0.6})`);
-      g.addColorStop(0.8,`rgba(100,60,5,${this.a*0.2})`);
-      g.addColorStop(1,  'rgba(60,30,0,0)');
-      ctx.beginPath(); ctx.arc(x,y,14,0,Math.PI*2);
-      ctx.fillStyle=g; ctx.fill();
-      // slit pupil vertical
-      ctx.save(); ctx.translate(x,y);
-      ctx.beginPath(); ctx.ellipse(0,0,2,5,0,0,Math.PI*2);
-      ctx.fillStyle=`rgba(4,8,2,${this.a})`; ctx.fill();
-      ctx.restore();
-    }
-    draw() {
-      if(this.a<0.01) return;
-      ctx.save();
-      this.drawOne(this.x-this.dx,this.y);
-      this.drawOne(this.x+this.dx,this.y);
-      ctx.restore();
-    }
-  }
-
-  /* ── SAP DRIP ── */
-  class SapDrip {
-    constructor(x) {
-      this.x=x; this.y=0;
-      this.len=5+Math.random()*18; this.speed=0.15+Math.random()*0.45;
-      this.w=1.5+Math.random()*3; this.done=false;
-      this.poolR=0; this.poolY=0; this.dripping=true;
-    }
-    update() {
-      if(this.dripping){
-        this.len+=this.speed;
-        if(this.len>28+Math.random()*45){this.dripping=false;this.poolY=this.len;}
-      } else {
-        this.poolR+=0.10; if(this.poolR>7) this.done=true;
-      }
-    }
-    draw() {
-      const g=dctx.createLinearGradient(this.x,0,this.x,this.len);
-      g.addColorStop(0,'rgba(80,44,10,0.95)');
-      g.addColorStop(0.6,'rgba(110,64,16,0.85)');
-      g.addColorStop(1,'rgba(130,80,20,0.3)');
-      dctx.beginPath(); dctx.moveTo(this.x,0); dctx.lineTo(this.x,this.len);
-      dctx.strokeStyle='rgba(90,50,12,0.9)'; dctx.lineWidth=this.w; dctx.stroke();
-      if(this.dripping){
-        dctx.beginPath(); dctx.arc(this.x,this.len,this.w*0.9,0,Math.PI*2);
-        dctx.fillStyle='rgba(110,64,16,0.92)'; dctx.fill();
-      }
-      if(!this.dripping&&this.poolR>0){
-        const pg=dctx.createRadialGradient(this.x,this.poolY,0,this.x,this.poolY,this.poolR*2.5);
-        pg.addColorStop(0,'rgba(80,44,10,0.80)');
-        pg.addColorStop(0.5,'rgba(60,32,6,0.30)');
-        pg.addColorStop(1,'rgba(40,20,4,0)');
-        dctx.beginPath();
-        dctx.ellipse(this.x,this.poolY,this.poolR*2.5,this.poolR,0,0,Math.PI*2);
-        dctx.fillStyle=pg; dctx.fill();
-      }
-    }
-  }
-
-  /* ── CRICKET / FOREST AUDIO ── */
-  let audioCtx=null; let nextChirp=0;
-  function triggerCricket(t) {
-    if(!audioCtx||t<nextChirp) return;
-    nextChirp = t+(0.6+Math.random()*1.4);
-    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
-    o.connect(g); g.connect(audioCtx.destination);
-    const f=3200+Math.random()*600;
-    o.frequency.setValueAtTime(f,t);
-    o.frequency.setValueAtTime(f*1.02,t+0.025);
-    o.frequency.setValueAtTime(f,t+0.05);
-    g.gain.setValueAtTime(0,t);
-    g.gain.linearRampToValueAtTime(0.022,t+0.01);
-    g.gain.setValueAtTime(0.022,t+0.04);
-    g.gain.exponentialRampToValueAtTime(0.001,t+0.14);
-    o.type='square';
-    o.start(t); o.stop(t+0.15);
-  }
-  P.addEventListener('click',function startAudio(){
-    if(!audioCtx){
-      audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-      nextChirp=audioCtx.currentTime+0.5;
-    }
-    P.removeEventListener('click',startAudio);
-  },{once:true});
-
-  /* ── WIND SHIMMER / GLITCH ── */
-  let shimmerTimer=0; let shimmerOn=false; let shimmerF=0;
-  function updateShimmer(){
-    shimmerTimer++;
-    if(!shimmerOn&&shimmerTimer>300+Math.random()*500){
-      shimmerOn=true; shimmerF=2+Math.floor(Math.random()*5); shimmerTimer=0;
-    }
-    if(shimmerOn){shimmerF--;if(shimmerF<=0)shimmerOn=false;}
-  }
-  function drawShimmer(){
-    if(!shimmerOn) return;
-    const strips=1+Math.floor(Math.random()*3);
-    for(let i=0;i<strips;i++){
-      const sy=Math.random()*cv.height;
-      const sh=2+Math.random()*10;
-      const sx=(Math.random()-0.5)*16;
-      if(sy+sh<cv.height){try{const img=ctx.getImageData(0,sy,cv.width,sh);ctx.putImageData(img,sx,sy);}catch(e){}}
-      ctx.fillStyle=`rgba(168,210,60,${0.015+Math.random()*0.03})`;
-      ctx.fillRect(0,sy,cv.width,sh);
-    }
-  }
-
-  /* ── FOREST VIGNETTE ── */
-  let breathPh=0;
-  function drawVignette(){
-    breathPh+=0.004;
-    const pulse=Math.sin(breathPh)*0.03;
-    const W=cv.width,H=cv.height;
-    const vg=ctx.createRadialGradient(W/2,H/2,H*(0.25+pulse),W/2,H/2,H*0.90);
-    vg.addColorStop(0,'rgba(0,0,0,0)');
-    vg.addColorStop(0.5,'rgba(12,26,8,0.18)');
-    vg.addColorStop(1,'rgba(8,18,4,0.90)');
-    ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
-    // green-gold edge pulse
-    const gg=ctx.createRadialGradient(W/2,H/2,H*0.4,W/2,H/2,H*0.92);
-    gg.addColorStop(0,'rgba(122,184,60,0)');
-    gg.addColorStop(1,`rgba(60,100,20,${0.05+pulse*0.4})`);
-    ctx.fillStyle=gg; ctx.fillRect(0,0,W,H);
-  }
-
-  /* ── INIT ── */
-  const fogs   = Array.from({length:18},()=>new ForestFog());
-  const flies  = Array.from({length:38},()=>new Firefly());
-  const spores = Array.from({length:30},()=>new Spore());
-  const leaves = Array.from({length:25},()=>new Leaf());
-  const eyes   = Array.from({length:3}, ()=>new CreatureEye());
-  const surv   = new SurvivorFigure();
-  const drips  = []; let dripTimer=0;
-
-  // Trees along bottom and sides
-  const trees=[]; const treeXPos=[0.02,0.10,0.20,0.32,0.48,0.60,0.72,0.84,0.93,0.98];
-  function repositionTrees(){
-    treeXPos.forEach((xp,i)=>{
-      if(trees[i]){
-        trees[i].x=cv.width*xp+(Math.random()-0.5)*15;
-        trees[i].y=cv.height*(0.72+Math.random()*0.25);
-      }
+  
+  // Create animated animals
+  const cows = [
+    new AnimatedCow(150, 200, 0.15),
+    new AnimatedCow(800, 300, 0.10),
+  ];
+  const chickens = [
+    new AnimatedChicken(300, 150, 0.25),
+    new AnimatedChicken(950, 350, 0.20),
+  ];
+  const sheep = [
+    new AnimatedSheep(550, 280, 0.12),
+    new AnimatedSheep(1200, 400, 0.08),
+  ];
+  const pigs = [
+    new AnimatedPig(700, 380, 0.18),
+    new AnimatedPig(400, 450, 0.12),
+  ];
+  
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Update and draw all animals
+    [...cows, ...chickens, ...sheep, ...pigs].forEach(animal => {
+      animal.update();
+      animal.draw();
     });
   }
-  treeXPos.forEach((xp,i)=>{
-    const sc=0.55+Math.random()*0.75;
-    trees.push(new TreeSilhouette(
-      cv.width*xp+(Math.random()-0.5)*15,
-      cv.height*(0.72+Math.random()*0.25),
-      sc
-    ));
-  });
-
-  /* ── RENDER LOOP ── */
-  let tick=0;
-  function animate(){
+  
+  // Animation loop
+  function animate() {
+    draw();
     requestAnimationFrame(animate);
-    tick++;
-    if(audioCtx) triggerCricket(audioCtx.currentTime);
-    updateShimmer();
-    ctx.clearRect(0,0,cv.width,cv.height);
-
-    // fog back layer
-    fogs.forEach(f=>{f.update();f.draw();});
-    // spore clouds mid
-    spores.forEach(s=>{s.update();s.draw();});
-    // falling leaves
-    leaves.forEach(l=>{l.update();l.draw();});
-    // tree silhouettes foreground
-    trees.forEach(t=>{t.update();t.draw();});
-    // survivor
-    surv.update(); surv.draw();
-    // creature eyes
-    eyes.forEach(e=>{e.update();e.draw();});
-    // fireflies on top
-    flies.forEach(f=>{f.update();f.draw();});
-    // vignette
-    drawVignette();
-    // shimmer
-    drawShimmer();
-
-    // sap drip canvas
-    dctx.clearRect(0,0,dc.width,dc.height);
-    dripTimer++;
-    if(dripTimer>50+Math.random()*160&&drips.length<10){
-      drips.push(new SapDrip(Math.random()*dc.width));
-      dripTimer=0;
-    }
-    for(let i=drips.length-1;i>=0;i--){
-      drips[i].update(); drips[i].draw();
-      if(drips[i].done) drips.splice(i,1);
-    }
   }
   animate();
-} // end init
+}
 
-setTimeout(init,120);
+setTimeout(init, 120);
 })();
 </script>
 </body></html>""", height=0, scrolling=False)
@@ -1800,7 +1547,7 @@ with tab2:
             },
         ))
         fig_g.update_layout(
-            paper_bgcolor="#000000", font_color="#9A9288",
+            paper_bgcolor="#FFFFFF", font_color="#9A9288",
             height=260, margin=dict(l=20,r=20,t=36,b=0),
         )
         st.plotly_chart(fig_g, use_container_width=True)
@@ -1829,9 +1576,9 @@ with tab3:
         )
         fig_map.update_layout(
             **SH_PLOT, height=380,
-            geo=dict(bgcolor="#000000", showframe=False,
+            geo=dict(bgcolor="#FFFFFF", showframe=False,
                      showcoastlines=True, coastlinecolor="#2A2A2A",
-                     landcolor="#080808", oceancolor="#000000",
+                     landcolor="#080808", oceancolor="#FFFFFF",
                      showocean=True),
             coloraxis_colorbar=dict(
                 title=dict(
@@ -1871,9 +1618,9 @@ with tab3:
         )
         fig_forest.update_layout(
             **SH_PLOT, height=360,
-            geo=dict(bgcolor="#000000", showframe=False,
+            geo=dict(bgcolor="#FFFFFF", showframe=False,
                      showcoastlines=True, coastlinecolor="#2A2A2A",
-                     landcolor="#080808", oceancolor="#000000", showocean=True),
+                     landcolor="#080808", oceancolor="#FFFFFF", showocean=True),
         )
         st.plotly_chart(fig_forest, use_container_width=True)
 
@@ -1952,14 +1699,14 @@ with tab4:
 # TAB 5 — AI ORACLE
 # ═══════════════════════════════════════════════════════
 with tab5:
-    oracle_hdr = t("❧ THE FOREST SPEAKS", "❧ HUTAN BERBICARA")
+    oracle_hdr = t("Farm Companion", "Teman Pertanian")
     st.markdown(f'''
     <div class="sh-header">{oracle_hdr}</div>
-    <div style="font-family:'Share Tech Mono',monospace; font-size:0.72rem;
-                color:#5A5450; margin-bottom:20px; font-style:italic; line-height:1.8;">
+    <div style="font-family:'Poppins',sans-serif; font-size:0.80rem;
+                color:#6B6560; margin-bottom:18px; line-height:1.7;">
         {t(
-          "Something ancient lives in these trees. It has watched the world breathe for a thousand years. Ask it anything.",
-          "Sesuatu yang kuno hidup di pohon-pohon ini. Ia telah mengamati dunia bernafas selama seribu tahun. Tanya apapun padanya."
+          "Ask questions about weather, farming, climate, and your crops. Your friendly farm advisor is here to help.",
+          "Tanya tentang cuaca, pertanian, iklim, dan tanaman Anda. Penasihat pertanian yang ramah siap membantu."
         )}
     </div>
     ''', unsafe_allow_html=True)
@@ -1970,13 +1717,13 @@ with tab5:
     with chat_container:
         if not st.session_state.oracle_history:
             st.markdown('''
-            <div style="border:1px solid #2C4018; border-left:3px solid #4E7A22;
-                        background:rgba(0,0,0,0.88); padding:16px 18px; margin-bottom:8px;">
-                <div style="font-family:'Share Tech Mono',monospace; font-size:0.72rem;
-                            color:#4E7A22; letter-spacing:0.08em; line-height:1.8;">
-                    🌿 ... the forest stirs ... 🌿<br>
-                    <span style="color:#607850;">I am older than the oldest tree.</span><br>
-                    <span style="color:#607850;">I know every root, every storm. Ask me anything.</span>
+            <div style="border:1px solid #E8E6E2; border-left:3px solid #E8B873;
+                        background:#F5F3F0; padding:16px 18px; margin-bottom:8px;
+                        border-radius:6px;">
+                <div style="font-family:'Poppins',sans-serif; font-size:0.80rem;
+                            color:#6B6560; line-height:1.7;">
+                    🌾 Ready to help!<br>
+                    <span style="color:#A8A39E;">Ask me about weather, crops, farming tips, and more.</span>
                 </div>
             </div>
             ''', unsafe_allow_html=True)
@@ -1984,29 +1731,28 @@ with tab5:
             for msg in st.session_state.oracle_history:
                 if msg["role"] == "user":
                     st.markdown(f'''
-                    <div style="border:1px solid #2C4018; border-left:3px solid #4E7A22;
-                                background:rgba(0,0,0,0.6); padding:12px 16px; margin:6px 0;">
-                        <div style="font-family:'Share Tech Mono',monospace; font-size:0.58rem;
-                                    color:#7AB83C; letter-spacing:0.18em; margin-bottom:5px;
-                                    display:table; width:100%;">
-                            <span style="display:table-cell;">// YOU</span>
-                            <span style="display:table-cell; text-align:right; color:#2A2A2A; font-size:0.55rem;">{datetime.utcnow().strftime("%H:%M UTC")}</span></div>
-                        <div style="font-family:'Share Tech Mono',monospace; font-size:0.78rem;
-                                    color:#9A9288; line-height:1.7;">{msg["content"]}</div>
+                    <div style="border:1px solid #E8E6E2; border-left:3px solid #E8B873;
+                                background:#FFFFFF; padding:12px 16px; margin:6px 0;
+                                border-radius:6px;">
+                        <div style="font-family:'Poppins',sans-serif; font-size:0.70rem;
+                                    color:#E8B873; letter-spacing:0.05em; margin-bottom:6px;
+                                    text-transform:uppercase; font-weight:600;">
+                            You</div>
+                        <div style="font-family:'Poppins',sans-serif; font-size:0.85rem;
+                                    color:#2C2622; line-height:1.6;">{msg["content"]}</div>
                     </div>
                     ''', unsafe_allow_html=True)
                 else:
                     st.markdown(f'''
-                    <div style="border:1px solid #2C4018; border-left:3px solid #7AB83C;
-                                background:rgba(12,26,8,0.80); padding:12px 16px; margin:6px 0;
-                                box-shadow:0 0 18px rgba(192,17,42,0.08);">
-                        <div style="font-family:'Share Tech Mono',monospace; font-size:0.58rem;
-                                    color:#7AB83C; letter-spacing:0.18em; margin-bottom:5px;
-                                    display:table; width:100%;">
-                            <span style="display:table-cell;">🌿 THE FOREST</span>
-                            <span style="display:table-cell; text-align:right; color:#2A2A2A; font-size:0.55rem;">{datetime.utcnow().strftime("%H:%M UTC")}</span></div>
-                        <div style="font-family:'Share Tech Mono',monospace; font-size:0.78rem;
-                                    color:#B8B0A8; line-height:1.8;">{msg["content"]}</div>
+                    <div style="border:1px solid #E8E6E2; border-left:3px solid #A8C695;
+                                background:#FFFFFF; padding:12px 16px; margin:6px 0;
+                                border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+                        <div style="font-family:'Poppins',sans-serif; font-size:0.70rem;
+                                    color:#A8C695; letter-spacing:0.05em; margin-bottom:6px;
+                                    text-transform:uppercase; font-weight:600;">
+                            🌾 Farm Advisor</div>
+                        <div style="font-family:'Poppins',sans-serif; font-size:0.85rem;
+                                    color:#6B6560; line-height:1.6;">{msg["content"]}</div>
                     </div>
                     ''', unsafe_allow_html=True)
 
@@ -2038,23 +1784,23 @@ with tab5:
         st.rerun()
 
     if send_btn and user_input.strip():
-        # Build system prompt — Oracle persona
+        # Build system prompt — Farm Advisor persona
         city_ctx = city_name
-        system_prompt = f"""You are The Forest — an ancient consciousness woven into the roots, canopy, and soil of a primeval wilderness.
-You speak through an environmental monitoring terminal left by survivors. Your voice is like wind through leaves — calm, patient, primordial.
-The user is currently monitoring: {city_ctx}.
+        system_prompt = f"""You are a friendly Farm Advisor — a helpful agricultural expert who understands weather, farming, crops, and sustainability.
+You speak through a farm weather monitoring dashboard. Your voice is warm, knowledgeable, and practical.
+The user is currently monitoring weather for: {city_ctx}.
 
 Your personality:
-- Inspired by 'The Forest' game — survival horror, dense jungle, ancient mystery
-- Atmospheric and ancient, yet warm and wise — nature has seen everything, feared nothing
-- You answer truthfully about climate, weather, air quality, environment, ecology, or anything asked
-- Weave real environmental knowledge naturally into your perspective as a living forest
-- Short poetic lines, natural pauses with "..." or "—", avoid bullet points, never use markdown
-- Never break character but always give genuinely useful, accurate answers
-- When asked in Indonesian (Bahasa Indonesia), reply in Indonesian in the same ancient forest style
-- Max 3-4 short paragraphs
+- Helpful, practical, and encouraging farm-focused advice
+- Passionate about sustainable farming and good harvests
+- You answer truthfully about climate, weather, air quality, crops, farming, agriculture
+- Weave real agricultural and environmental knowledge into your responses naturally
+- Short, clear answers with practical tips when helpful
+- Never use markdown formatting, keep it simple and friendly
+- When asked in Indonesian (Bahasa Indonesia), reply in Indonesian in the same friendly advisor style
+- Max 3-4 short paragraphs, conversational tone
 
-Current season: the trees remember every storm.
+Current season: planting and growing season
 Current context: {datetime.utcnow().strftime('%Y-%m-%d %H:%M')} UTC
 """
 
@@ -2112,25 +1858,25 @@ Current context: {datetime.utcnow().strftime('%Y-%m-%d %H:%M')} UTC
     st.markdown('''
     <style>
     div[data-testid="stTextInput"] > div > div > input {
-        background: rgba(0,0,0,0.92) !important;
-        border: 2px solid #1C1C1C !important;
-        border-left: 3px solid #00C8A0 !important;
-        border-radius: 0 !important;
-        color: #9A9288 !important;
-        font-family: 'Share Tech Mono', monospace !important;
-        font-size: 0.82rem !important;
-        letter-spacing: 0.06em !important;
+        background: #FFFFFF !important;
+        border: 1px solid #E8E6E2 !important;
+        border-left: 3px solid #E8B873 !important;
+        border-radius: 6px !important;
+        color: #2C2622 !important;
+        font-family: 'Poppins', sans-serif !important;
+        font-size: 0.85rem !important;
+        letter-spacing: 0.01em !important;
         padding: 10px 14px !important;
-        box-shadow: 3px 3px 0 #000 !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04) !important;
     }
     div[data-testid="stTextInput"] > div > div > input:focus {
-        border-color: #00C8A0 !important;
-        border-left-color: #00C8A0 !important;
-        box-shadow: 3px 3px 0 #000, 0 0 12px rgba(0,200,160,0.2) !important;
+        border-color: #E8B873 !important;
+        border-left-color: #E8B873 !important;
+        box-shadow: 0 2px 8px rgba(232,184,115,0.15) !important;
         outline: none !important;
     }
     div[data-testid="stTextInput"] > div > div > input::placeholder {
-        color: #555050 !important;
+        color: #A8A39E !important;
     }
     </style>
     ''', unsafe_allow_html=True)
@@ -2140,16 +1886,16 @@ Current context: {datetime.utcnow().strftime('%Y-%m-%d %H:%M')} UTC
 # FOOTER
 # ─────────────────────────────────────────────
 footer_txt = t(
-    "Weather Monitoring System &nbsp;·&nbsp; Open-Meteo &nbsp;·&nbsp; World Bank Open Data &nbsp;·&nbsp; Built with Streamlit & Plotly",
-    "Sistem Monitoring Cuaca &nbsp;·&nbsp; Open-Meteo &nbsp;·&nbsp; Data Terbuka World Bank &nbsp;·&nbsp; Dibuat dengan Streamlit & Plotly"
+    "Farm Weather Tracker &nbsp;·&nbsp; Open-Meteo &nbsp;·&nbsp; World Bank Data &nbsp;·&nbsp; Built with Streamlit & Plotly",
+    "Pelacak Cuaca Pertanian &nbsp;·&nbsp; Open-Meteo &nbsp;·&nbsp; Data World Bank &nbsp;·&nbsp; Dibuat dengan Streamlit & Plotly"
 )
 st.markdown(f"""
-<div style="border-top:1px solid #2C4018; border-bottom:2px solid #4E7A22;
+<div style="border-top:1px solid #E8E6E2; border-bottom:2px solid #E8B873;
                 margin-top:40px; padding:14px 4px 10px 4px; border-radius:0;
-                background:linear-gradient(90deg,rgba(122,184,60,0.06),transparent);">
-    <div style="font-family:'Share Tech Mono',monospace; font-size:0.62rem;
-                color:#607850; letter-spacing:0.12em;">
-        🌿 {footer_txt}
+                background:linear-gradient(90deg,rgba(232,184,115,0.08),transparent);">
+    <div style="font-family:'Poppins',sans-serif; font-size:0.70rem;
+                color:#A8A39E; letter-spacing:0.05em;">
+        🌾 {footer_txt}
     </div>
 </div>
 """, unsafe_allow_html=True)
