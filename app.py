@@ -17,7 +17,7 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────
-# SESSION STATE — language toggle
+# SESSION STATE — language toggle, city selection
 # ─────────────────────────────────────────────
 if "lang" not in st.session_state:
     st.session_state.lang = "EN"
@@ -25,6 +25,8 @@ if "oracle_history" not in st.session_state:
     st.session_state.oracle_history = []
 if "oracle_input_key" not in st.session_state:
     st.session_state.oracle_input_key = 0
+if "selected_city" not in st.session_state:
+    st.session_state.selected_city = "Jakarta, Indonesia"
 
 def t(en: str, id: str) -> str:
     """Return translation based on current language."""
@@ -678,7 +680,9 @@ def fetch_weather(lat: float, lon: float, days: int = 30) -> pd.DataFrame:
         f"?latitude={lat}&longitude={lon}"
         f"&start_date={start}&end_date={end}"
         "&daily=temperature_2m_max,temperature_2m_min,temperature_2m_mean,"
-        "precipitation_sum,windspeed_10m_max,shortwave_radiation_sum"
+        "precipitation_sum,windspeed_10m_max,shortwave_radiation_sum,"
+        "relative_humidity_2m_max,relative_humidity_2m_min,relative_humidity_2m_mean,"
+        "pressure_2m_max,pressure_2m_min,pressure_2m_mean"
         "&timezone=UTC"
     )
     # Fallback: Open-Meteo forecast (shorter range but same domain works usually)
@@ -686,7 +690,9 @@ def fetch_weather(lat: float, lon: float, days: int = 30) -> pd.DataFrame:
         "https://api.open-meteo.com/v1/forecast"
         f"?latitude={lat}&longitude={lon}"
         "&daily=temperature_2m_max,temperature_2m_min,temperature_2m_mean,"
-        "precipitation_sum,windspeed_10m_max,shortwave_radiation_sum"
+        "precipitation_sum,windspeed_10m_max,shortwave_radiation_sum,"
+        "relative_humidity_2m_max,relative_humidity_2m_min,relative_humidity_2m_mean,"
+        "pressure_2m_max,pressure_2m_min,pressure_2m_mean"
         "&timezone=UTC&past_days=92&forecast_days=1"
     )
 
@@ -741,7 +747,9 @@ def fetch_forecast(lat: float, lon: float) -> pd.DataFrame:
         "https://api.open-meteo.com/v1/forecast"
         f"?latitude={lat}&longitude={lon}"
         "&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,"
-        "windspeed_10m_max,weathercode"
+        "windspeed_10m_max,weathercode,shortwave_radiation_sum,"
+        "relative_humidity_2m_max,relative_humidity_2m_min,relative_humidity_2m_mean,"
+        "pressure_2m_max,pressure_2m_min,pressure_2m_mean"
         "&timezone=UTC&forecast_days=7"
     )
     try:
@@ -902,27 +910,57 @@ WMO_LABEL_ID = {
     95:"Badai Petir",
 }
 
-CITIES = {
-    "Jakarta, Indonesia":      (-6.2088,  106.8456),
-    "Surabaya, Indonesia":     (-7.2575,  112.7521),
-    "Bandung, Indonesia":      (-6.9175,  107.6191),
-    "Medan, Indonesia":        (3.5952,    98.6722),
-    "New York, USA":           (40.7128,  -74.0060),
-    "London, UK":              (51.5074,   -0.1278),
-    "Tokyo, Japan":            (35.6762,  139.6503),
-    "Sydney, Australia":       (-33.8688, 151.2093),
-    "Berlin, Germany":         (52.5200,   13.4050),
-    "São Paulo, Brazil":       (-23.5505, -46.6333),
+# ─── Geocoding API function - Search locations worldwide ───
+@st.cache_data(ttl=3600)
+def search_locations(query: str) -> dict:
+    """Search for locations using Open-Meteo Geocoding API."""
+    if not query or len(query) < 2:
+        return {}
+    try:
+        url = "https://geocoding-api.open-meteo.com/v1/search"
+        params = {"name": query, "count": 10, "language": "en", "format": "json"}
+        response = requests.get(url, params=params, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        results = {}
+        if "results" in data:
+            for result in data["results"]:
+                name_parts = []
+                if "name" in result:
+                    name_parts.append(result["name"])
+                if "admin1" in result:
+                    name_parts.append(result["admin1"])
+                if "country" in result:
+                    name_parts.append(result["country"])
+                display_name = ", ".join(name_parts)
+                lat = result.get("latitude")
+                lon = result.get("longitude")
+                if lat is not None and lon is not None:
+                    results[display_name] = (lat, lon)
+        return results
+    except Exception as e:
+        st.warning(f"Error searching locations: {str(e)}", icon="⚠️")
+        return {}
+
+# Default cities for initial load
+DEFAULT_CITIES = {
+    "Jakarta, Indonesia": (-6.2088, 106.8456),
+    "Surabaya, Indonesia": (-7.2575, 112.7521),
+    "Bandung, Indonesia": (-6.9175, 107.6191),
+    "New York, USA": (40.7128, -74.0060),
+    "London, United Kingdom": (51.5074, -0.1278),
+    "Tokyo, Japan": (35.6762, 139.6503),
 }
 
 # ─── AQI colour + label (bilingual) ───────────
 def aqi_info(pm25: float) -> tuple[str, str, str]:
     """Returns (label_en, label_id, hex_color)."""
-    if pm25 <= 12:   return "Forest Clear",    "Hutan Bersih",      "#5A9E2A"
-    if pm25 <= 35.4: return "Hazy Canopy",     "Kanopi Berkabut",   "#C8A030"
-    if pm25 <= 55.4: return "Spore Storm",     "Badai Spora",       "#CC5818"
-    if pm25 <= 150:  return "Toxic Bloom",     "Mekar Beracun",     "#8E2A0A"
-    return               "The Red Fog",        "Kabut Merah",       "#2A0808"
+    if pm25 <= 15.5:   return "Healthy Barn",    "Baik (Lumbung Sehat)",      "#5A9E2A"
+    if pm25 <= 55.4: return "Cozy Staple",     "Sedang (Kandang Nyaman)",   "#C8A030"
+    if pm25 <= 150.4: return "Young Stock Alert",     "Tidak Sehat untuk Kelompok Sensitif (Peringatan Ternak Muda)",       "#CC5818"
+    if pm25 <= 250.4:  return "Livestock Stress",     "Tidak Sehat (Ternak Stres)",     "#8E2A0A"
+    if pm25 <= 350.4:  return "Health Crisis",     "Sangat Tidak Sehat (Krisis Kesehatan)",     "#FF0000"
+    return               "Ranch Emergency",        "Berbahaya (Darurat Peternakan)",       "#000000"
 
 # ─── Plotly base layout (Farming palette) ──
 SH_PLOT = dict(
@@ -989,10 +1027,46 @@ with st.sidebar:
 
     st.markdown("---")
 
-    # ── City selector ──────────────────────────
+    # ── City/Location search with API support ──
     city_label   = t("📍 City / Location", "📍 Kota / Lokasi")
-    city_name    = st.selectbox(city_label, list(CITIES.keys()), index=0)
-    lat, lon     = CITIES[city_name]
+    search_placeholder = t("🔍 Search any city...", "🔍 Cari kota mana saja...")
+    
+    location_query = st.text_input(
+        city_label,
+        value="",
+        placeholder=search_placeholder,
+        help=t("Type location name (worldwide)", "Ketik nama lokasi (seluruh dunia)"),
+        label_visibility="visible"
+    )
+    
+    if location_query and len(location_query) >= 2:
+        search_results = search_locations(location_query)
+        if search_results:
+            city_name = st.selectbox(
+                t("Select location", "Pilih lokasi"),
+                list(search_results.keys()),
+                label_visibility="collapsed",
+                key="sidebar_location_select"
+            )
+            lat, lon = search_results[city_name]
+            if city_name != st.session_state.selected_city:
+                st.session_state.selected_city = city_name
+        else:
+            st.info(t("No locations found", "Lokasi tidak ditemukan"))
+            city_name = st.session_state.selected_city
+            if city_name in DEFAULT_CITIES:
+                lat, lon = DEFAULT_CITIES[city_name]
+            else:
+                city_name = list(DEFAULT_CITIES.keys())[0]
+                lat, lon = DEFAULT_CITIES[city_name]
+    else:
+        city_name = st.session_state.selected_city
+        if city_name in DEFAULT_CITIES:
+            lat, lon = DEFAULT_CITIES[city_name]
+        else:
+            city_name = list(DEFAULT_CITIES.keys())[0]
+            st.session_state.selected_city = city_name
+            lat, lon = DEFAULT_CITIES[city_name]
 
     # ── History slider ─────────────────────────
     hist_label   = t("📅 History (days)", "📅 Riwayat (hari)")
@@ -1343,22 +1417,28 @@ with tab1:
         latest = hist.iloc[-1]
         kpis = [
             (f"{latest['temperature_2m_mean']:.1f}", "°C",
-             t("Temp Today", "Suhu Hari Ini")),
+             t("Temperature", "Suhu")),
+            (f"{latest.get('relative_humidity_2m_mean', 0):.0f}", "%",
+             t("Humidity", "Kelembapan")),
             (f"{hist['precipitation_sum'].sum():.1f}", "mm",
              t(f"Rain {history_days}d", f"Hujan {history_days}h")),
             (f"{hist['windspeed_10m_max'].mean():.1f}", "km/h",
              t("Avg Wind", "Angin Rata-rata")),
+            (f"{latest.get('pressure_2m_mean', 0):.0f}", "hPa",
+             t("Pressure", "Tekanan")),
             (f"{hist['shortwave_radiation_sum'].mean():.1f}", "MJ/m²",
              t("Solar Radiation", "Radiasi Matahari")),
         ]
-        cols = st.columns(4)
-        for col, (val, unit, lbl) in zip(cols, kpis):
-            with col:
+        cols = st.columns(3)
+        for i, (val, unit, lbl) in enumerate(kpis):
+            with cols[i % 3]:
                 st.markdown(f"""
                 <div class="sh-card">
                     <div class="sh-card-value">{val}<span class="sh-card-unit">{unit}</span></div>
                     <div class="sh-card-label">{lbl}</div>
                 </div>""", unsafe_allow_html=True)
+            if (i + 1) % 3 == 0 and i < len(kpis) - 1:
+                cols = st.columns(3)
 
         st.markdown("")
 
@@ -1416,6 +1496,77 @@ with tab1:
             fig_wind.update_layout(**SH_PLOT, height=260)
             st.plotly_chart(fig_wind, use_container_width=True)
 
+        # ── Relative Humidity ──────────────────────
+        st.markdown("")
+        hdr_humidity = t("// RELATIVE HUMIDITY", "// KELEMBAPAN RELATIF")
+        st.markdown(f'<div class="sh-header">{hdr_humidity}</div>', unsafe_allow_html=True)
+        
+        fig_humidity = go.Figure()
+        fig_humidity.add_trace(go.Scatter(
+            x=hist["time"], y=hist.get("relative_humidity_2m_max", []),
+            name=t("Max","Maks"), line=dict(color="#0099CC", width=1.5),
+        ))
+        fig_humidity.add_trace(go.Scatter(
+            x=hist["time"], y=hist.get("relative_humidity_2m_min", []),
+            name=t("Min","Min"), line=dict(color="#00CCFF", width=1.5),
+            fill="tonexty", fillcolor="rgba(0,153,204,0.08)",
+        ))
+        fig_humidity.add_trace(go.Scatter(
+            x=hist["time"], y=hist.get("relative_humidity_2m_mean", []),
+            name=t("Mean","Rata²"), line=dict(color="#0066CC", width=2, dash="dot"),
+        ))
+        fig_humidity.update_layout(
+            **SH_PLOT, height=300,
+            legend=dict(orientation="h", y=1.08,
+                        font=dict(family="Share Tech Mono", size=10)),
+            xaxis_title=t("Date","Tanggal"),
+            yaxis_title=t("Relative Humidity (%)","Kelembapan Relatif (%)"),
+        )
+        st.plotly_chart(fig_humidity, use_container_width=True)
+
+        # ── Atmospheric Pressure ───────────────────
+        st.markdown("")
+        hdr_pressure = t("// ATMOSPHERIC PRESSURE", "// TEKANAN UDARA")
+        st.markdown(f'<div class="sh-header">{hdr_pressure}</div>', unsafe_allow_html=True)
+        
+        fig_pressure = go.Figure()
+        fig_pressure.add_trace(go.Scatter(
+            x=hist["time"], y=hist.get("pressure_2m_max", []),
+            name=t("Max","Maks"), line=dict(color="#FF6B35", width=1.5),
+        ))
+        fig_pressure.add_trace(go.Scatter(
+            x=hist["time"], y=hist.get("pressure_2m_min", []),
+            name=t("Min","Min"), line=dict(color="#FFA500", width=1.5),
+            fill="tonexty", fillcolor="rgba(255,107,53,0.08)",
+        ))
+        fig_pressure.add_trace(go.Scatter(
+            x=hist["time"], y=hist.get("pressure_2m_mean", []),
+            name=t("Mean","Rata²"), line=dict(color="#FF6B35", width=2, dash="dot"),
+        ))
+        fig_pressure.update_layout(
+            **SH_PLOT, height=300,
+            legend=dict(orientation="h", y=1.08,
+                        font=dict(family="Share Tech Mono", size=10)),
+            xaxis_title=t("Date","Tanggal"),
+            yaxis_title=t("Pressure (hPa)","Tekanan (hPa)"),
+        )
+        st.plotly_chart(fig_pressure, use_container_width=True)
+
+        # ── Solar Radiation ────────────────────────
+        st.markdown("")
+        hdr_solar = t("// SOLAR RADIATION", "// RADIASI MATAHARI")
+        st.markdown(f'<div class="sh-header">{hdr_solar}</div>', unsafe_allow_html=True)
+        
+        fig_solar = px.bar(
+            hist, x="time", y="shortwave_radiation_sum",
+            color="shortwave_radiation_sum",
+            color_continuous_scale=[[0,"#F0E68C"],[0.5,"#FFD700"],[1,"#FFA500"]],
+            labels={"shortwave_radiation_sum": t("Solar Radiation (MJ/m²)","Radiasi Matahari (MJ/m²)"),
+                    "time": t("Date","Tanggal")},
+        )
+        fig_solar.update_layout(**SH_PLOT, height=260, coloraxis_showscale=False)
+        st.plotly_chart(fig_solar, use_container_width=True)
+
     # ── 7-Day Forecast ─────────────────────────
     if not fcast.empty:
         hdr_fcast = t("// 7-DAY FORECAST", "// PRAKIRAAN 7 HARI")
@@ -1430,6 +1581,9 @@ with tab1:
                 hi    = row["temperature_2m_max"]
                 lo    = row["temperature_2m_min"]
                 rain  = row["precipitation_sum"]
+                humidity = row.get("relative_humidity_2m_mean", 0)
+                pressure = row.get("pressure_2m_mean", 0)
+                solar = row.get("shortwave_radiation_sum", 0)
                 st.markdown(f"""
                 <div class="sh-forecast">
                     <div style="font-family:'Share Tech Mono',monospace; font-size:0.6rem;
@@ -1441,6 +1595,12 @@ with tab1:
                                 color:#5A5450;">{lo:.0f}°</div>
                     <div style="font-family:'Share Tech Mono',monospace; font-size:0.62rem;
                                 color:#8B3A2A; margin-top:3px;">{rain:.1f}mm</div>
+                    <div style="font-family:'Share Tech Mono',monospace; font-size:0.62rem;
+                                color:#0099CC; margin-top:2px;"><strong>RH: {humidity:.0f}%</strong></div>
+                    <div style="font-family:'Share Tech Mono',monospace; font-size:0.62rem;
+                                color:#FF6B35; margin-top:2px;"><strong>P: {pressure:.0f}hPa</strong></div>
+                    <div style="font-family:'Share Tech Mono',monospace; font-size:0.62rem;
+                                color:#FFA500; margin-top:2px;"><strong>☀: {solar:.1f}</strong></div>
                     <div style="font-family:'Share Tech Mono',monospace; font-size:0.68rem;
                                 color:#7C7670; margin-top:3px; font-style:italic;">{wlbl}</div>
                 </div>""", unsafe_allow_html=True)
@@ -1760,8 +1920,8 @@ with tab5:
     # ── Input row ──────────────────────────────
     st.markdown("<div style='margin-top:16px;'></div>", unsafe_allow_html=True)
     inp_placeholder = t(
-        "Speak into the void...",
-        "Bicara ke dalam kekosongan..."
+        "Speak into the mother nature...",
+        "Bicara ke dalam ibu pertiwi..."
     )
     _ikey = f"oracle_input_{st.session_state.oracle_input_key}"
     user_input = st.text_input(
