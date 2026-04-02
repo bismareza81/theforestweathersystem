@@ -742,7 +742,7 @@ def fetch_weather(lat: float, lon: float, days: int = 30) -> pd.DataFrame:
 
 @st.cache_data(ttl=3600)
 def fetch_forecast(lat: float, lon: float) -> pd.DataFrame:
-    # Primary: Open-Meteo forecast
+    # Primary: Open-Meteo forecast (16 days maximum)
     url_primary = (
         "https://api.open-meteo.com/v1/forecast"
         f"?latitude={lat}&longitude={lon}"
@@ -750,7 +750,7 @@ def fetch_forecast(lat: float, lon: float) -> pd.DataFrame:
         "windspeed_10m_max,weathercode,shortwave_radiation_sum,"
         "relative_humidity_2m_max,relative_humidity_2m_min,relative_humidity_2m_mean,"
         "pressure_2m_max,pressure_2m_min,pressure_2m_mean"
-        "&timezone=UTC&forecast_days=7"
+        "&timezone=UTC&forecast_days=16"
     )
     try:
         r = _get(url_primary, timeout=25)
@@ -1070,7 +1070,7 @@ with st.sidebar:
 
     # ── History slider ─────────────────────────
     hist_label   = t("📅 History (days)", "📅 Riwayat (hari)")
-    history_days = st.slider(hist_label, 7, 90, 30)
+    history_days = st.slider(hist_label, 7, 365, 30)
 
     # ── Refresh button ─────────────────────────
     st.markdown("---")
@@ -1567,43 +1567,50 @@ with tab1:
         fig_solar.update_layout(**SH_PLOT, height=260, coloraxis_showscale=False)
         st.plotly_chart(fig_solar, use_container_width=True)
 
-    # ── 7-Day Forecast ─────────────────────────
+    # ── 16-Day Forecast ────────────────────────
     if not fcast.empty:
-        hdr_fcast = t("// 7-DAY FORECAST", "// PRAKIRAAN 7 HARI")
+        hdr_fcast = t("// 16-DAY FORECAST", "// PRAKIRAAN 16 HARI")
         st.markdown(f'<div class="sh-header">{hdr_fcast}</div>', unsafe_allow_html=True)
-        fcols = st.columns(7)
-        for i, (_, row) in enumerate(fcast.iterrows()):
-            with fcols[i]:
-                code  = int(row.get("weathercode",0)) if pd.notna(row.get("weathercode")) else 0
-                icon  = WMO_CODES.get(code, "🌡️")
-                wlbl  = (WMO_LABEL_EN if st.session_state.lang=="EN" else WMO_LABEL_ID).get(code,"")
-                day   = row["time"].strftime("%a %d")
-                hi    = row["temperature_2m_max"]
-                lo    = row["temperature_2m_min"]
-                rain  = row["precipitation_sum"]
-                humidity = row.get("relative_humidity_2m_mean", 0)
-                pressure = row.get("pressure_2m_mean", 0)
-                solar = row.get("shortwave_radiation_sum", 0)
-                st.markdown(f"""
-                <div class="sh-forecast">
-                    <div style="font-family:'Share Tech Mono',monospace; font-size:0.6rem;
-                                color:#7C7670; letter-spacing:0.08em; text-transform:uppercase;">{day}</div>
-                    <div style="font-size:1.5rem; margin:4px 0; line-height:1;">{icon}</div>
-                    <div style="font-family:'Special Elite',serif; font-size:0.9rem;
-                                color:#D8D0C8;">{hi:.0f}°</div>
-                    <div style="font-family:'Share Tech Mono',monospace; font-size:0.75rem;
-                                color:#5A5450;">{lo:.0f}°</div>
-                    <div style="font-family:'Share Tech Mono',monospace; font-size:0.62rem;
-                                color:#8B3A2A; margin-top:3px;">{rain:.1f}mm</div>
-                    <div style="font-family:'Share Tech Mono',monospace; font-size:0.62rem;
-                                color:#0099CC; margin-top:2px;"><strong>RH: {humidity:.0f}%</strong></div>
-                    <div style="font-family:'Share Tech Mono',monospace; font-size:0.62rem;
-                                color:#FF6B35; margin-top:2px;"><strong>P: {pressure:.0f}hPa</strong></div>
-                    <div style="font-family:'Share Tech Mono',monospace; font-size:0.62rem;
-                                color:#FFA500; margin-top:2px;"><strong>☀: {solar:.1f}</strong></div>
-                    <div style="font-family:'Share Tech Mono',monospace; font-size:0.68rem;
-                                color:#7C7670; margin-top:3px; font-style:italic;">{wlbl}</div>
-                </div>""", unsafe_allow_html=True)
+        
+        # Display forecast in 2 rows (8 days each for better responsiveness)
+        num_days = min(len(fcast), 16)
+        days_per_row = 8
+        
+        for row_idx in range(0, num_days, days_per_row):
+            fcols = st.columns(min(days_per_row, num_days - row_idx))
+            
+            for col_idx, (col, (_, row)) in enumerate(zip(fcols, fcast.iloc[row_idx:row_idx + days_per_row].iterrows())):
+                with col:
+                    code  = int(row.get("weathercode",0)) if pd.notna(row.get("weathercode")) else 0
+                    icon  = WMO_CODES.get(code, "🌡️")
+                    wlbl  = (WMO_LABEL_EN if st.session_state.lang=="EN" else WMO_LABEL_ID).get(code,"")
+                    day   = row["time"].strftime("%a %d")
+                    hi    = row["temperature_2m_max"]
+                    lo    = row["temperature_2m_min"]
+                    rain  = row["precipitation_sum"]
+                    humidity = row.get("relative_humidity_2m_mean", 0)
+                    pressure = row.get("pressure_2m_mean", 0)
+                    solar = row.get("shortwave_radiation_sum", 0)
+                    st.markdown(f"""
+                    <div class="sh-forecast">
+                        <div style="font-family:'Share Tech Mono',monospace; font-size:0.6rem;
+                                    color:#7C7670; letter-spacing:0.08em; text-transform:uppercase;">{day}</div>
+                        <div style="font-size:1.5rem; margin:4px 0; line-height:1;">{icon}</div>
+                        <div style="font-family:'Special Elite',serif; font-size:0.9rem;
+                                    color:#D8D0C8;">{hi:.0f}°</div>
+                        <div style="font-family:'Share Tech Mono',monospace; font-size:0.75rem;
+                                    color:#5A5450;">{lo:.0f}°</div>
+                        <div style="font-family:'Share Tech Mono',monospace; font-size:0.62rem;
+                                    color:#8B3A2A; margin-top:3px;">{rain:.1f}mm</div>
+                        <div style="font-family:'Share Tech Mono',monospace; font-size:0.62rem;
+                                    color:#0099CC; margin-top:2px;"><strong>RH: {humidity:.0f}%</strong></div>
+                        <div style="font-family:'Share Tech Mono',monospace; font-size:0.62rem;
+                                    color:#FF6B35; margin-top:2px;"><strong>P: {pressure:.0f}hPa</strong></div>
+                        <div style="font-family:'Share Tech Mono',monospace; font-size:0.62rem;
+                                    color:#FFA500; margin-top:2px;"><strong>☀: {solar:.1f}</strong></div>
+                        <div style="font-family:'Share Tech Mono',monospace; font-size:0.68rem;
+                                    color:#7C7670; margin-top:3px; font-style:italic;">{wlbl}</div>
+                    </div>""", unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════
